@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -12,10 +13,10 @@ type Config struct {
 	Strategies string
 }
 
-func Find(rootDir string) (confFiles []string, err error) {
-	filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+func FindProjects(rootDir string) (dirs []string, err error) {
+	filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
 		if !info.IsDir() && info.Name() == configFileName {
-			confFiles = append(confFiles, path)
+			dirs = append(dirs, path.Dir(p))
 		}
 		return nil
 	})

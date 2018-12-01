@@ -23,13 +23,13 @@ func main() {
 
 	// log.Println(config.Scripts)
 
-	r, _ := repo.New()
-	ref := r.BranchRef("master")
+	r := repo.NewRepo()
+	files, err := r.UpdatedFiles("master")
 
-	if ref != nil {
-		fmt.Printf("hey: %v\n", ref)
+	if err != nil {
+		fmt.Printf("hey: %v\n", err)
 	} else {
-		fmt.Println("no ref")
+		fmt.Println("oy: %v", files)
 	}
 
 	commands.Execute()
