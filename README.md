@@ -1,8 +1,20 @@
 # GALLY
 
+## Configuation files
+
+`.gally.yml`
+
+```yml
+strategies:
+  compare-to:
+    branch: master
+  previous-commit:
+    only-on: master
+```
+
 ## Strategies
 
-### branch-to-master
+### compare-to-branch
 
 Test the updated projects between current branch and master
 
