@@ -1,10 +1,13 @@
 package config
 
 import (
+	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 const configFileName = ".gally.yml"
@@ -23,6 +26,20 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 		return nil
 	})
 	return
+}
+
+func ReadConfig(dir string) (c Config) {
+	viper.SetConfigFile(path.Join(dir, configFileName))
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file, %s", err)
+	}
+
+	if err := viper.Unmarshal(&c); err != nil {
+		log.Fatalf("unable to decode into struct, %v", err)
+	}
+
+	return c
 }
 
 func UpdatedProject(projects, files []string) []string {
