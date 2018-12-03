@@ -1,21 +1,41 @@
 package repo
 
 import (
-	"fmt"
-	"path"
 	"os/exec"
+	"path"
 	"strings"
 
 	jww "github.com/spf13/jwalterweatherman"
 )
 
-type Repo struct {
-	Root string
+func BranchExists(branchName string) bool {
+	_, err := exec.Command("git", "rev-parse", "--verify", branchName).Output()
+	return err == nil
 }
 
-func (r *Repo) UpdatedFiles(branchName string) (files []string, err error) {
+func CurrentCommit() string {
+	out, err := exec.Command("git", "rev-parse", "HEAD").Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func IsOnBranch(branchName string) bool {
+	out, err := exec.Command("git", "branch", "-a", "--contains", CurrentCommit(), "--points-at", branchName).Output()
+	return err == nil && strings.TrimSpace(string(out)) == ""
+}
+
+func Root() string {
+	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func UpdatedFiles(branchName string) (files []string, err error) {
 	out, err := exec.Command("git", "diff", "--name-only", branchName+"...").Output()
-	fmt.Println(string(out))
 	if err != nil {
 		if _, err = exec.Command("git", "fetch", "origin", branchName).Output(); err != nil {
 			jww.ERROR.Printf("cannot get remote branch %s: %v\n", branchName, err)
@@ -27,17 +47,10 @@ func (r *Repo) UpdatedFiles(branchName string) (files []string, err error) {
 			return nil, err
 		}
 	}
+	root := Root()
 	for _, f := range strings.Split(string(out), "\n") {
-		files = append(files, path.Join(r.Root, strings.TrimSpace(f)))
+		files = append(files, path.Join(root, strings.TrimSpace(f)))
 	}
 
 	return files, nil
-}
-
-func NewRepo() (*Repo) {
-	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
-	if err != nil {
-		panic(err)
-	}
-	return &Repo{Root: strings.TrimSpace(string(out))}
 }

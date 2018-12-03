@@ -23,8 +23,7 @@ func main() {
 
 	// log.Println(config.Scripts)
 
-	r := repo.NewRepo()
-	files, err := r.UpdatedFiles("master")
+	files, err := repo.UpdatedFiles("master")
 
 	if err != nil {
 		fmt.Printf("hey: %v\n", err)
