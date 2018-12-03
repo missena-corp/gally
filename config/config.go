@@ -4,13 +4,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 const configFileName = ".gally.yml"
 
 type Config struct {
-	Scripts    string
-	Strategies string
+	Ignore     []string
+	Scripts    map[string]interface{}
+	Strategies map[string]interface{}
 }
 
 func FindProjects(rootDir string) (dirs []string, err error) {
@@ -21,4 +23,17 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 		return nil
 	})
 	return
+}
+
+func UpdatedProject(projects, files []string) []string {
+	updated := make([]string, 0)
+	for _, p := range projects {
+		for _, f := range files {
+			if strings.HasPrefix(f, p) {
+				updated = append(updated, p)
+				break
+			}
+		}
+	}
+	return updated
 }
