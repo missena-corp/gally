@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/missena-corp/gally/repo"
 	"github.com/spf13/viper"
 )
 
@@ -14,8 +15,13 @@ const configFileName = ".gally.yml"
 
 type Config struct {
 	Ignore     []string
-	Scripts    map[string]interface{}
-	Strategies map[string]interface{}
+	Scripts    map[string]string
+	Strategies map[string]Strategy
+}
+
+type Strategy struct {
+	Branch string
+	Only   string
 }
 
 func FindProjects(rootDir string) (dirs []string, err error) {
@@ -26,14 +32,6 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 		return nil
 	})
 	return
-}
-
-func flatSlice(afiles [][]string) []string {
-	files := make([]string, 0)
-	for _, f := range afiles {
-		files = append(files, f...)
-	}
-	return files
 }
 
 func ReadConfig(dir string) (c Config) {
@@ -50,16 +48,50 @@ func ReadConfig(dir string) (c Config) {
 	return c
 }
 
-func UpdatedProjectConfig(projects []string, aFiles ...[]string) map[string]Config {
-	files := flatSlice(aFiles)
-	configs := make(map[string]Config)
-	for _, p := range projects {
-		for _, f := range files {
-			if strings.HasPrefix(f, p) {
-				configs[p] = ReadConfig(p)
-				break
+func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
+	files := make([]string, 0)
+	for name, opts := range strategies {
+		switch name {
+		case "compare-to":
+			res, err := repo.UpdatedFiles(opts.Branch)
+			if err != nil {
+				continue
 			}
+			files = append(files, res...)
+		case "previous-commit":
+			if !repo.IsOnBranch(opts.Only) {
+				continue
+			}
+			res, err := repo.UpdatedFiles("HEAD^1")
+			if err != nil {
+				continue
+			}
+			files = append(files, res...)
+		default:
+			log.Fatalf("unkown strategy %s", name)
 		}
 	}
+	return files
+}
+
+func UpdatedProjectConfig() map[string]Config {
+	configs := make(map[string]Config)
+	projects, _ := FindProjects(repo.Root())
+	for _, p := range projects {
+		c := ReadConfig(p)
+		if WasUpdated(p, c) {
+			configs[p] = c
+		}
+		break
+	}
 	return configs
+}
+
+func WasUpdated(project string, c Config) bool {
+	for _, f := range UpdatedFilesByStrategies(c.Strategies) {
+		if strings.HasPrefix(f, project) {
+			return true
+		}
+	}
+	return false
 }

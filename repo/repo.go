@@ -23,7 +23,7 @@ func CurrentCommit() string {
 
 func IsOnBranch(branchName string) bool {
 	out, err := exec.Command("git", "branch", "-a", "--contains", CurrentCommit(), "--points-at", branchName).Output()
-	return err == nil && strings.TrimSpace(string(out)) == ""
+	return err == nil && strings.TrimSpace(string(out)) != ""
 }
 
 func Root() string {
@@ -34,16 +34,16 @@ func Root() string {
 	return strings.TrimSpace(string(out))
 }
 
-func UpdatedFiles(branchName string) (files []string, err error) {
-	out, err := exec.Command("git", "diff", "--name-only", branchName+"...").Output()
+func UpdatedFiles(commit string) (files []string, err error) {
+	out, err := exec.Command("git", "diff", "--name-only", commit+"...").Output()
 	if err != nil {
-		if _, err = exec.Command("git", "fetch", "origin", branchName).Output(); err != nil {
-			jww.ERROR.Printf("cannot get remote branch %s: %v\n", branchName, err)
+		if _, err = exec.Command("git", "fetch", "origin", commit).Output(); err != nil {
+			jww.ERROR.Printf("cannot get remote branch %s: %v\n", commit, err)
 			return nil, err
 		}
 		out, err = exec.Command("git", "diff", "--name-only", "FETCH_HEAD...").Output()
 		if err != nil {
-			jww.ERROR.Printf("cannot make diff for %s: %v\n", branchName, err)
+			jww.ERROR.Printf("cannot make diff for %s: %v\n", commit, err)
 			return nil, err
 		}
 	}
