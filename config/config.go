@@ -50,16 +50,16 @@ func ReadConfig(dir string) (c Config) {
 	return c
 }
 
-func UpdatedProject(projects []string, aFiles ...[]string) []string {
+func UpdatedProjectConfig(projects []string, aFiles ...[]string) map[string]Config {
 	files := flatSlice(aFiles)
-	updated := make([]string, 0)
+	configs := make(map[string]Config)
 	for _, p := range projects {
 		for _, f := range files {
 			if strings.HasPrefix(f, p) {
-				updated = append(updated, p)
+				configs[p] = ReadConfig(p)
 				break
 			}
 		}
 	}
-	return updated
+	return configs
 }
