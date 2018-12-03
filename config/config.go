@@ -28,6 +28,14 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 	return
 }
 
+func flatSlice(afiles [][]string) []string {
+	files := make([]string, 0)
+	for _, f := range afiles {
+		files = append(files, f...)
+	}
+	return files
+}
+
 func ReadConfig(dir string) (c Config) {
 	viper.SetConfigFile(path.Join(dir, configFileName))
 
@@ -42,7 +50,8 @@ func ReadConfig(dir string) (c Config) {
 	return c
 }
 
-func UpdatedProject(projects, files []string) []string {
+func UpdatedProject(projects []string, aFiles ...[]string) []string {
+	files := flatSlice(aFiles)
 	updated := make([]string, 0)
 	for _, p := range projects {
 		for _, f := range files {
