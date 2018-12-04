@@ -17,6 +17,7 @@ const configFileName = ".gally.yml"
 
 type Config struct {
 	Ignore     []string
+	Name       string
 	Scripts    map[string]string
 	Strategies map[string]Strategy
 }
