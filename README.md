@@ -38,7 +38,6 @@ On `master` branch test the updated projects the previous commit
 
 ## TODO
 
-- [ ] Add tests
 - [ ] Run scripts from project file
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
