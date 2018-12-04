@@ -1,7 +1,10 @@
-# Gally <img align="right" src="https://user-images.githubusercontent.com/747/49454572-b0c3e600-f7e5-11e8-9be3-3feadfff1a52.jpeg" width=256>
+# Gally
+
+<img align="right" src="https://user-images.githubusercontent.com/747/49454572-b0c3e600-f7e5-11e8-9be3-3feadfff1a52.jpeg" width="38%">
 
 An opinionated tool to help with monoreposity projects.
-It basicly help us interfacing with `travis` avoiding to rebuild on each change.
+
+It basicly helps us interfacing with `travis` avoiding to test and rebuild every projects on each change.
 Each project contains a `.gally.yml` describing the project, and how to interact with it.
 
 Constraints:
@@ -10,9 +13,9 @@ Constraints:
 - No nested project - at least for now
 - 2 strategies checking files update (for now)
 
-## Configuation files
+## Configuration files
 
-`.gally.yml`
+They are named `.gally.yml`, and they look like the following example
 
 ```yml
 name: example
@@ -26,7 +29,11 @@ strategies:
     only: master
 ```
 
+They have to be placed in each managed projects.
+
 ## Strategies
+
+Strategies are the way we check if files in project have been updated
 
 ### compare-to
 
