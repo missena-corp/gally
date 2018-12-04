@@ -5,27 +5,22 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	git "gopkg.in/src-d/go-git.v4"
+	jww "github.com/spf13/jwalterweatherman"
 )
 
 var (
-	rootFolder string
+	verbosity string
 )
 
-func addRootFolderFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&rootFolder, "root-folder", "r", gitRoot(), "folder containing the monorepo")
+func addVerboseFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&verbosity, "verbose", "v", "verbose", "log level info")
 }
 
-func gitRoot() string {
-	r, err := git.PlainOpenWithOptions(".", &git.PlainOpenOptions{DetectDotGit: true})
-	if err != nil {
-		return ""
+func init() {
+	if verbosity == "verbose" {
+		jww.SetLogThreshold(jww.LevelTrace)
+		jww.SetStdoutThreshold(jww.LevelInfo)
 	}
-	t, err := r.Worktree()
-	if err != nil {
-		return ""
-	}
-	return t.Filesystem.Root()
 }
 
 func Execute() {

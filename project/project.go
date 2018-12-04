@@ -1,8 +1,10 @@
 package project
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -31,7 +33,15 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 		}
 		return nil
 	})
-	return
+	return dirs, nil
+}
+
+func (c Config) Run(s string) ([]byte, error) {
+	script, ok := c.Scripts[s]
+	if !ok {
+		return nil, fmt.Errorf("script %s not available", s)
+	}
+	return exec.Command("sh", "-c", script).Output()
 }
 
 func ReadConfig(dir string) (c Config) {
@@ -82,7 +92,6 @@ func UpdatedProjectConfig() map[string]Config {
 		if WasUpdated(p, c) {
 			configs[p] = c
 		}
-		break
 	}
 	return configs
 }
