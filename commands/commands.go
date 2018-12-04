@@ -5,22 +5,14 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	jww "github.com/spf13/jwalterweatherman"
 )
 
 var (
-	verbosity string
+	verbose bool
 )
 
 func addVerboseFlag(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&verbosity, "verbose", "v", "verbose", "log level info")
-}
-
-func init() {
-	if verbosity == "verbose" {
-		jww.SetLogThreshold(jww.LevelTrace)
-		jww.SetStdoutThreshold(jww.LevelInfo)
-	}
+	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
 }
 
 func Execute() {

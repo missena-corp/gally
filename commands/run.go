@@ -20,12 +20,11 @@ var runCmd = &cobra.Command{
 			if err != nil {
 				jww.ERROR.Fatalf("could not run properly script %s: %v", script, err)
 			}
-			jww.LOG.Printf(string(out))
+			jww.INFO.Printf(string(out))
 		}
 	},
 }
 
 func init() {
-	addVerboseFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
 }

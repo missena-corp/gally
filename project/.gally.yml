@@ -1,7 +1,0 @@
-scripts:
-  test: toto
-strategies:
-  compare-to:
-    branch: master
-  previous-commit:
-    only: master

@@ -1,0 +1,7 @@
+scripts:
+  test: echo hello world
+strategies:
+  compare-to:
+    branch: master
+  previous-commit:
+    only: master
