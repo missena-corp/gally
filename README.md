@@ -1,4 +1,4 @@
-# GALLY
+# Gally <img align="right" src="https://user-images.githubusercontent.com/747/49454572-b0c3e600-f7e5-11e8-9be3-3feadfff1a52.jpeg" width=256>
 
 An opinionated tool to help with monoreposity projects.
 It basicly help us interfacing with `travis` avoiding to rebuild on each change.
@@ -38,7 +38,7 @@ On `master` branch test the updated projects the previous commit
 
 ## TODO
 
-- [ ] Run scripts from project file
+- [x] Run scripts from project file
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Handle `git`'s tag

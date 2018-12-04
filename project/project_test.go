@@ -33,4 +33,12 @@ func TestRun(t *testing.T) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
 		t.FailNow()
 	}
+
+	expected = []byte("project.go\nproject_test.go\n")
+	c = Config{Scripts: map[string]string{"list": "ls"}}
+	out, err = c.Run("list")
+	if !cmp.Equal(out, expected) {
+		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
+		t.FailNow()
+	}
 }

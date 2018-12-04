@@ -16,6 +16,7 @@ import (
 const configFileName = ".gally.yml"
 
 type Config struct {
+	Dir        string
 	Ignore     []string
 	Name       string
 	Scripts    map[string]string
@@ -42,20 +43,20 @@ func (c Config) Run(s string) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("script %s not available", s)
 	}
-	return exec.Command("sh", "-c", script).Output()
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = c.Dir
+	return cmd.Output()
 }
 
 func ReadConfig(dir string) (c Config) {
 	viper.SetConfigFile(path.Join(dir, configFileName))
-
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
 	}
-
 	if err := viper.Unmarshal(&c); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
-
+	c.Dir = dir
 	return c
 }
 
