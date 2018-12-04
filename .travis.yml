@@ -15,9 +15,9 @@ deploy:
   provider: releases
   api_key: "${GITHUB_API_KEY}"
   file:
-    - dist/haproxy-gen_linux_386.tgz
-    - dist/haproxy-gen_linux_amd64.tgz
-    - dist/haproxy-gen_darwin_amd64.tgz
+    - dist/gally_linux_386.tgz
+    - dist/gally_linux_amd64.tgz
+    - dist/gally_darwin_amd64.tgz
   skip_cleanup: true
   on:
     tags: true
