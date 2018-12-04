@@ -38,7 +38,6 @@ On `master` branch test the updated projects the previous commit
 
 ## TODO
 
-- [ ] Add tests
 - [ ] Run scripts from project file
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
@@ -48,3 +47,4 @@ On `master` branch test the updated projects the previous commit
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Handle builds
 - [ ] Automatically generate releases
+- [ ] Ability to ignore pattern
