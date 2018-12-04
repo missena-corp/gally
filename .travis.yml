@@ -1,5 +1,4 @@
 language: go
-sudo: required
 before_install:
   - go get -u github.com/golang/dep/...
   - go get github.com/mitchellh/gox
@@ -10,7 +9,6 @@ after_success:
   - gox
     -osarch "linux/386 linux/amd64 darwin/amd64"
     -output="dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
-  - "sudo chown ${USER}: dist/*"
   - cd dist ; for f in *; do tar zcvf $f.tgz $f; done; cd -
   - ls -l dist
 deploy:
