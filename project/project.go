@@ -38,6 +38,25 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
+func (c Config) ignored(file string) bool {
+	for _, p := range c.Ignore {
+		files, err := filepath.Glob(p)
+		if err != nil {
+			panic(err)
+		}
+		for _, f := range files {
+			if f == file {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (c Config) include(file string) bool {
+	return strings.HasPrefix(file, c.Dir) && !c.ignored(file)
+}
+
 func (c Config) Run(s string) ([]byte, error) {
 	script, ok := c.Scripts[s]
 	if !ok {
@@ -91,16 +110,16 @@ func UpdatedProjectConfig() map[string]Config {
 	projects, _ := FindProjects(repo.Root())
 	for _, p := range projects {
 		c := ReadConfig(p)
-		if WasUpdated(p, c) {
+		if c.WasUpdated() {
 			configs[p] = c
 		}
 	}
 	return configs
 }
 
-func WasUpdated(project string, c Config) bool {
+func (c Config) WasUpdated() bool {
 	for _, f := range UpdatedFilesByStrategies(c.Strategies) {
-		if strings.HasPrefix(f, project) {
+		if c.include(f) {
 			return true
 		}
 	}

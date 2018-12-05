@@ -47,6 +47,7 @@ On `master` branch test the updated projects the previous commit
 
 - [x] Run scripts from project file
 - [x] Automatically generate releases
+- [x] Ability to ignore pattern
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Handle `git`'s tag
@@ -54,4 +55,3 @@ On `master` branch test the updated projects the previous commit
 - [ ] Fix verbose flag
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Handle builds
-- [ ] Ability to ignore pattern
