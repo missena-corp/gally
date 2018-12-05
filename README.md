@@ -19,6 +19,8 @@ They are named `.gally.yml`, and they look like the following example
 
 ```yml
 name: example
+ignore:
+  - not/relevant/for/tests/*
 scripts:
   build: docker build .
   test: echo hello world
@@ -27,6 +29,7 @@ strategies:
     branch: master
   previous-commit:
     only: master
+version: head -1 VERSION
 ```
 
 They have to be placed in each managed projects.
@@ -48,10 +51,13 @@ On `master` branch test the updated projects the previous commit
 - [x] Run scripts from project file
 - [x] Automatically generate releases
 - [x] Ability to ignore pattern
+- [x] Handle project version
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Handle `git`'s tag
-- [ ] Handle project version
 - [ ] Fix verbose flag
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Handle builds
+- [ ] Add `gally init` subcommand
+- [ ] Add `-f` option to bypass strategies
+- [ ] Add `-p` option to select project by name
