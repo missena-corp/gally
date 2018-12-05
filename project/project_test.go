@@ -6,16 +6,16 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestFindProjects(t *testing.T) {
+func TestFindProjectPaths(t *testing.T) {
 	t.Parallel()
-	projects, err := FindProjects("..")
+	paths, err := FindProjectPaths("..")
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 	expected := []string{"../_examples"}
-	if !cmp.Equal(projects, expected) {
-		t.Errorf("projects %v must be equal to %v", projects, expected)
+	if !cmp.Equal(paths, expected) {
+		t.Errorf("paths %v must be equal to %v", paths, expected)
 		t.FailNow()
 	}
 }

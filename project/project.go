@@ -30,7 +30,7 @@ type Strategy struct {
 	Only   string
 }
 
-func FindProjects(rootDir string) (dirs []string, err error) {
+func FindProjectPaths(rootDir string) (dirs []string, err error) {
 	filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
 		if !info.IsDir() && info.Name() == configFileName {
 			dirs = append(dirs, path.Dir(p))
@@ -111,7 +111,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func UpdatedProjectConfig() map[string]Project {
 	configs := make(map[string]Project)
-	projects, _ := FindProjects(repo.Root())
+	projects, _ := FindProjectPaths(repo.Root())
 	for _, p := range projects {
 		c := ReadConfig(p)
 		if c.WasUpdated() {
