@@ -9,3 +9,4 @@ strategies:
     branch: master
   previous-commit:
     only: master
+version: head -1 VERSION

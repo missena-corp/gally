@@ -58,3 +58,6 @@ On `master` branch test the updated projects the previous commit
 - [ ] Fix verbose flag
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Handle builds
+- [ ] Add `gally init` subcommand
+- [ ] Add `-f` option to bypass strategies
+- [ ] Add `-p` option to select project by name
