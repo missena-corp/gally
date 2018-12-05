@@ -5,4 +5,4 @@ before_install:
 script:
   - make test
 after_success:
-  - [[ -n "$TRAVIS_TAG" ]] && make release
+  - if [[ -n "$TRAVIS_TAG" ]]; then make release; fi
