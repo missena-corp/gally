@@ -45,7 +45,7 @@ func TestRun(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	t.Parallel()
-	c := Config{Dir: "../_examples", Version: "head -1 VERSION"}
+	c := Config{Dir: "../_examples", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.version() != expected {
 		t.Errorf("version must be equal to %s", expected)

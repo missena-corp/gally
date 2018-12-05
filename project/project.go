@@ -16,13 +16,13 @@ import (
 const configFileName = ".gally.yml"
 
 type Config struct {
-	Dir        string
-	ConfigFile string
-	Ignore     []string
-	Name       string
-	Scripts    map[string]string
-	Strategies map[string]Strategy
-	Version    string
+	Dir           string
+	ConfigFile    string
+	Ignore        []string
+	Name          string
+	Scripts       map[string]string
+	Strategies    map[string]Strategy
+	VersionScript string
 }
 
 type Strategy struct {
@@ -70,11 +70,13 @@ func (c Config) Run(s string) ([]byte, error) {
 }
 
 func ReadConfig(dir string) (c Config) {
-	viper.SetConfigFile(path.Join(dir, configFileName))
-	if err := viper.ReadInConfig(); err != nil {
+	v := viper.New()
+	v.RegisterAlias("version", "version_script")
+	v.SetConfigFile(path.Join(dir, configFileName))
+	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
 	}
-	if err := viper.Unmarshal(&c); err != nil {
+	if err := v.Unmarshal(&c); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
 	c.Dir = dir
@@ -120,10 +122,10 @@ func UpdatedProjectConfig() map[string]Config {
 }
 
 func (c Config) version() string {
-	if c.Version == "" {
+	if c.VersionScript == "" {
 		log.Fatalf("no version available in %s", c.Dir)
 	}
-	cmd := exec.Command("sh", "-c", c.Version)
+	cmd := exec.Command("sh", "-c", c.VersionScript)
 	cmd.Dir = c.Dir
 	v, _ := cmd.Output()
 	return string(v)
