@@ -15,7 +15,7 @@ import (
 
 const configFileName = ".gally.yml"
 
-type Config struct {
+type Project struct {
 	Dir           string
 	ConfigFile    string
 	Ignore        []string
@@ -40,9 +40,9 @@ func FindProjects(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func (c Config) ignored(file string) bool {
-	for _, p := range c.Ignore {
-		files, err := filepath.Glob(p)
+func (p Project) ignored(file string) bool {
+	for _, pattern := range p.Ignore {
+		files, err := filepath.Glob(pattern)
 		if err != nil {
 			panic(err)
 		}
@@ -55,32 +55,32 @@ func (c Config) ignored(file string) bool {
 	return false
 }
 
-func (c Config) include(file string) bool {
-	return strings.HasPrefix(file, c.Dir) && !c.ignored(file)
+func (p Project) include(file string) bool {
+	return strings.HasPrefix(file, p.Dir) && !p.ignored(file)
 }
 
-func (c Config) Run(s string) ([]byte, error) {
-	script, ok := c.Scripts[s]
+func (p Project) Run(s string) ([]byte, error) {
+	script, ok := p.Scripts[s]
 	if !ok {
 		return nil, fmt.Errorf("script %s not available", s)
 	}
 	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = c.Dir
+	cmd.Dir = p.Dir
 	return cmd.Output()
 }
 
-func ReadConfig(dir string) (c Config) {
+func ReadConfig(dir string) (p Project) {
 	v := viper.New()
 	v.RegisterAlias("version", "version_script")
 	v.SetConfigFile(path.Join(dir, configFileName))
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
 	}
-	if err := v.Unmarshal(&c); err != nil {
+	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
-	c.Dir = dir
-	return c
+	p.Dir = dir
+	return p
 }
 
 func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
@@ -109,8 +109,8 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func UpdatedProjectConfig() map[string]Config {
-	configs := make(map[string]Config)
+func UpdatedProjectConfig() map[string]Project {
+	configs := make(map[string]Project)
 	projects, _ := FindProjects(repo.Root())
 	for _, p := range projects {
 		c := ReadConfig(p)
@@ -121,19 +121,19 @@ func UpdatedProjectConfig() map[string]Config {
 	return configs
 }
 
-func (c Config) version() string {
-	if c.VersionScript == "" {
-		log.Fatalf("no version available in %s", c.Dir)
+func (p Project) version() string {
+	if p.VersionScript == "" {
+		log.Fatalf("no version available in %s", p.Dir)
 	}
-	cmd := exec.Command("sh", "-c", c.VersionScript)
-	cmd.Dir = c.Dir
+	cmd := exec.Command("sh", "-c", p.VersionScript)
+	cmd.Dir = p.Dir
 	v, _ := cmd.Output()
 	return string(v)
 }
 
-func (c Config) WasUpdated() bool {
-	for _, f := range UpdatedFilesByStrategies(c.Strategies) {
-		if c.include(f) {
+func (p Project) WasUpdated() bool {
+	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
+		if p.include(f) {
 			return true
 		}
 	}
