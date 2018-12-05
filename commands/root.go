@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	jww "github.com/spf13/jwalterweatherman"
 )
 
 var rootCmd = &cobra.Command{
@@ -18,8 +17,4 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	addVerboseFlag(rootCmd)
-	if verbose {
-		jww.SetLogThreshold(jww.LevelTrace)
-		jww.SetStdoutThreshold(jww.LevelInfo)
-	}
 }

@@ -1,12 +1,15 @@
 builds:
   - binary: gally
+    env:
+      - CGO_ENABLED=0
     goos:
       - darwin
       - linux
     goarch:
       - amd64
-    env:
-      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X "helpers.BuildDate={{ .Date }}"
+      - -s -w -X "helpers.Version={{ .Tag }}"
 archive:
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   format: tar.gz
