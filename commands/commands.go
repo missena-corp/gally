@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	jww "github.com/spf13/jwalterweatherman"
 )
 
 var (
@@ -13,6 +14,13 @@ var (
 
 func addVerboseFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
+}
+
+func handleVerboseFlag() {
+	if verbose {
+		jww.SetLogThreshold(jww.LevelTrace)
+		jww.SetStdoutThreshold(jww.LevelInfo)
+	}
 }
 
 func Execute() {
