@@ -17,10 +17,12 @@ const configFileName = ".gally.yml"
 
 type Config struct {
 	Dir        string
+	ConfigFile string
 	Ignore     []string
 	Name       string
 	Scripts    map[string]string
 	Strategies map[string]Strategy
+	Version    string
 }
 
 type Strategy struct {
@@ -115,6 +117,16 @@ func UpdatedProjectConfig() map[string]Config {
 		}
 	}
 	return configs
+}
+
+func (c Config) version() string {
+	if c.Version == "" {
+		log.Fatalf("no version available in %s", c.Dir)
+	}
+	cmd := exec.Command("sh", "-c", c.Version)
+	cmd.Dir = c.Dir
+	v, _ := cmd.Output()
+	return string(v)
 }
 
 func (c Config) WasUpdated() bool {
