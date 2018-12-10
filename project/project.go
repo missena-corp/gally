@@ -40,9 +40,12 @@ func FindProjectPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func FindProjects() []Project {
+func FindProjects(rootDir string) []Project {
+	if rootDir == "" {
+		rootDir = repo.Root()
+	}
 	projects := make([]Project, 0)
-	paths, _ := FindProjectPaths(repo.Root())
+	paths, _ := FindProjectPaths(rootDir)
 	for _, p := range paths {
 		projects = append(projects, ReadConfig(p))
 	}
@@ -118,9 +121,12 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func UpdatedProjects() map[string]Project {
+func UpdatedProjects(rootDir string) map[string]Project {
+	if rootDir == "" {
+		rootDir = repo.Root()
+	}
 	projects := make(map[string]Project)
-	paths, _ := FindProjectPaths(repo.Root())
+	paths, _ := FindProjectPaths(rootDir)
 	for _, p := range paths {
 		c := ReadConfig(p)
 		if c.WasUpdated() {

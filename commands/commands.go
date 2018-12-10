@@ -9,8 +9,13 @@ import (
 )
 
 var (
+	rootDir string
 	verbose bool
 )
+
+func addRootDirFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVarP(&rootDir, "root", "r", "", "root directory")
+}
 
 func addVerboseFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
