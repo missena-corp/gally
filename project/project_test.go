@@ -6,9 +6,32 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+// func TestBuild(t *testing.T) {
+// 	t.Parallel()
+// 	c := Project{Scripts: map[string]string{"hello": "echo world"}}
+// 	out, err := c.Run("hello")
+// 	if err != nil {
+// 		t.Error(err)
+// 		t.FailNow()
+// 	}
+// 	expected := []byte("world\n")
+// 	if !cmp.Equal(out, expected) {
+// 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
+// 		t.FailNow()
+// 	}
+
+// 	expected = []byte("project.go\nproject_test.go\n")
+// 	c = Project{Scripts: map[string]string{"list": "ls"}}
+// 	out, err = c.Run("list")
+// 	if !cmp.Equal(out, expected) {
+// 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
+// 		t.FailNow()
+// 	}
+// }
+
 func TestFindProjectPaths(t *testing.T) {
 	t.Parallel()
-	paths, err := findProjectPaths("..")
+	paths, err := findPaths("..")
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

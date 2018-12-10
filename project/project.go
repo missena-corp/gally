@@ -37,11 +37,11 @@ func BuildTag(tag string, rootDir string) ([]byte, error) {
 		return nil, fmt.Errorf("%s is not a valid tag", tag)
 	}
 	p := Find(sp[0], rootDir)
-	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=", sp[1]))
+	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=%s", sp[1]))
 }
 
 func (p Project) exec(str string, env ...string) ([]byte, error) {
-	env = append(env, fmt.Sprintf("GALLY_NAME=", p.Name))
+	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), env...)
