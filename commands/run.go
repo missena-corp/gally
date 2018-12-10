@@ -8,7 +8,7 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "run your script for updated files",
+	Short: "run your script on projects having updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if len(args) == 0 {
