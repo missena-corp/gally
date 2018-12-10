@@ -14,7 +14,7 @@ var runCmd = &cobra.Command{
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		projects := project.FindUpdatedProjects(rootDir)
+		projects := project.FindAllUpdated(rootDir)
 		script := args[0]
 		for _, p := range projects {
 			out, err := p.Run(script)

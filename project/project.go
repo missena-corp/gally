@@ -31,20 +31,28 @@ type Strategy struct {
 	Only   string
 }
 
-// func BuildTag(tag string) ([]byte, error) {
-// 	sp := strings.Split(tag, "@")
-// 	if len(sp) != 2 {
-// 		return nil, fmt.Errorf("%s is not a valid tag", tag)
-// 	}
+func BuildTag(tag string, rootDir string) ([]byte, error) {
+	sp := strings.Split(tag, "@")
+	if len(sp) != 2 {
+		return nil, fmt.Errorf("%s is not a valid tag", tag)
+	}
+	p := Find(sp[0], rootDir)
+	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=", sp[1]))
+}
 
-// }
-
-func (p Project) exec(str string) ([]byte, error) {
+func (p Project) exec(str string, env ...string) ([]byte, error) {
+	env = append(env, fmt.Sprintf("GALLY_NAME=", p.Name))
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.Dir
+	cmd.Env = append(os.Environ(), env...)
 	return cmd.Output()
 }
-func findProjectPaths(rootDir string) (dirs []string, err error) {
+
+func Find(name string, rootDir string) Project {
+	return FindAll(rootDir)[name]
+}
+
+func findPaths(rootDir string) (dirs []string, err error) {
 	filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
 		if !info.IsDir() && info.Name() == configFileName {
 			dirs = append(dirs, path.Dir(p))
@@ -54,21 +62,21 @@ func findProjectPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func FindProjects(rootDir string) map[string]Project {
+func FindAll(rootDir string) map[string]Project {
 	if rootDir == "" {
 		rootDir = repo.Root()
 	}
 	projects := make(map[string]Project)
-	paths, _ := findProjectPaths(rootDir)
+	paths, _ := findPaths(rootDir)
 	for _, p := range paths {
 		projects[p] = readConfig(p)
 	}
 	return projects
 }
 
-func FindUpdatedProjects(rootDir string) map[string]Project {
+func FindAllUpdated(rootDir string) map[string]Project {
 	projects := make(map[string]Project)
-	for name, project := range FindProjects(rootDir) {
+	for name, project := range FindAll(rootDir) {
 		if project.WasUpdated() {
 			projects[name] = project
 		}

@@ -30,6 +30,7 @@ strategies:
   previous-commit:
     only: master
 version: head -1 VERSION
+build: echo go building!
 ```
 
 They have to be placed in each managed projects.
@@ -45,6 +46,22 @@ Test the updated projects between current branch and master
 ### previous-commit
 
 On `master` branch test the updated projects the previous commit
+
+### Builds
+
+In our workflow, final builds are launched with a specific tag. The tag is made
+with the following schema: `project-name` + `@` + `semver version`. ie:
+
+```
+myproject@12.0.5
+```
+
+Builds are handled with the `build:` explaining how to run them.
+
+### Special environment variables
+
+- `GALLY_NAME`
+- `GALLY_VERSION`
 
 ## TODO
 
