@@ -36,7 +36,12 @@ func BuildTag(tag string, rootDir string) ([]byte, error) {
 	if len(sp) != 2 {
 		return nil, fmt.Errorf("%s is not a valid tag", tag)
 	}
-	return Find(sp[0], rootDir).buildVersion(sp[1])
+	p := Find(sp[0], rootDir)
+	version := p.version()
+	if version != "" && version != sp[1] {
+		return nil, fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
+	}
+	return p.buildVersion(version)
 }
 
 func (p Project) buildVersion(version string) ([]byte, error) {
