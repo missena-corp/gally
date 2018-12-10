@@ -52,6 +52,7 @@ On `master` branch test the updated projects the previous commit
 - [x] Automatically generate releases
 - [x] Ability to ignore pattern
 - [x] Handle project version
+- [x] List projects
 - [ ] Add context dir option
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Handle `git`'s tag

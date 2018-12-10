@@ -14,10 +14,10 @@ var runCmd = &cobra.Command{
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		configs := project.UpdatedProjectConfig()
+		projects := project.UpdatedProjects()
 		script := args[0]
-		for _, c := range configs {
-			out, err := c.Run(script)
+		for _, p := range projects {
+			out, err := p.Run(script)
 			if err != nil {
 				jww.ERROR.Fatalf("could not run properly script %s: %v", script, err)
 			}

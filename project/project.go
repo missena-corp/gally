@@ -40,6 +40,15 @@ func FindProjectPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
+func FindProjects() []Project {
+	projects := make([]Project, 0)
+	paths, _ := FindProjectPaths(repo.Root())
+	for _, p := range paths {
+		projects = append(projects, ReadConfig(p))
+	}
+	return projects
+}
+
 func (p Project) ignored(file string) bool {
 	for _, pattern := range p.Ignore {
 		files, err := filepath.Glob(pattern)
@@ -109,16 +118,16 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func UpdatedProjectConfig() map[string]Project {
-	configs := make(map[string]Project)
-	projects, _ := FindProjectPaths(repo.Root())
-	for _, p := range projects {
+func UpdatedProjects() map[string]Project {
+	projects := make(map[string]Project)
+	paths, _ := FindProjectPaths(repo.Root())
+	for _, p := range paths {
 		c := ReadConfig(p)
 		if c.WasUpdated() {
-			configs[p] = c
+			projects[p] = c
 		}
 	}
-	return configs
+	return projects
 }
 
 func (p Project) version() string {
