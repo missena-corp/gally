@@ -12,7 +12,7 @@ var listCmd = &cobra.Command{
 	Short: "display all handled projects",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
-		projects := project.FindProjects()
+		projects := project.FindProjects(rootDir)
 		for _, p := range projects {
 			fmt.Printf("* %s: %s", p.Name, p.Dir)
 		}

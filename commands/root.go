@@ -16,5 +16,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	addRootDirFlag(rootCmd)
 	addVerboseFlag(rootCmd)
 }
