@@ -8,13 +8,13 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "let Gally run your script for updated files",
+	Short: "run your script on projects having updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		projects := project.UpdatedProjects(rootDir)
+		projects := project.FindAllUpdated(rootDir)
 		script := args[0]
 		for _, p := range projects {
 			out, err := p.Run(script)

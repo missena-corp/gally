@@ -30,6 +30,7 @@ strategies:
   previous-commit:
     only: master
 version: head -1 VERSION
+build: echo go building!
 ```
 
 They have to be placed in each managed projects.
@@ -46,6 +47,22 @@ Test the updated projects between current branch and master
 
 On `master` branch test the updated projects the previous commit
 
+### Builds
+
+In our workflow, final builds are launched with a specific tag. The tag is made
+with the following schema: `project-name` + `@` + `semver version`. ie:
+
+```
+myproject@12.0.5
+```
+
+Builds are handled with the `build:` explaining how to run them.
+
+### Special environment variables
+
+- `GALLY_NAME`
+- `GALLY_VERSION`
+
 ## TODO
 
 - [x] Run scripts from project file
@@ -54,11 +71,11 @@ On `master` branch test the updated projects the previous commit
 - [x] Handle project version
 - [x] List projects
 - [x] Add context dir option
+- [x] Fix verbose flag
+- [x] Handle `git`'s tag
+- [x] Handle builds
 - [ ] Remove `git`'s `.Exec` and do it through a library
-- [ ] Handle `git`'s tag
-- [ ] Fix verbose flag
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
-- [ ] Handle builds
 - [ ] Add `gally init` subcommand
 - [ ] Add `-f` option to bypass strategies
 - [ ] Add `-p` option to select project by name
