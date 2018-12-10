@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/missena-corp/gally/project"
 	"github.com/missena-corp/gally/repo"
 	"github.com/spf13/cobra"
 	jww "github.com/spf13/jwalterweatherman"
@@ -16,14 +17,11 @@ var buildCmd = &cobra.Command{
 			jww.INFO.Printf("no tag provided")
 			return
 		}
-		script := args[0]
-		for _, p := range projects {
-			out, err := p.Run(script)
-			if err != nil {
-				jww.ERROR.Fatalf("could not build properly script %s: %v", script, err)
-			}
-			jww.INFO.Printf(string(out))
+		out, err := project.BuildTag(tag, rootDir)
+		if err != nil {
+			jww.ERROR.Fatalf("could not build properly project: %v", err)
 		}
+		jww.INFO.Printf(string(out))
 	},
 }
 
