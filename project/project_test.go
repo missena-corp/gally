@@ -8,7 +8,7 @@ import (
 
 func TestFindProjectPaths(t *testing.T) {
 	t.Parallel()
-	paths, err := FindProjectPaths("..")
+	paths, err := findProjectPaths("..")
 	if err != nil {
 		t.Error(err)
 		t.FailNow()

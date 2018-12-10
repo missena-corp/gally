@@ -16,6 +16,7 @@ import (
 const configFileName = ".gally.yml"
 
 type Project struct {
+	Build         string
 	Dir           string
 	ConfigFile    string
 	Ignore        []string
@@ -30,7 +31,20 @@ type Strategy struct {
 	Only   string
 }
 
-func FindProjectPaths(rootDir string) (dirs []string, err error) {
+// func BuildTag(tag string) ([]byte, error) {
+// 	sp := strings.Split(tag, "@")
+// 	if len(sp) != 2 {
+// 		return nil, fmt.Errorf("%s is not a valid tag", tag)
+// 	}
+
+// }
+
+func (p Project) exec(str string) ([]byte, error) {
+	cmd := exec.Command("sh", "-c", str)
+	cmd.Dir = p.Dir
+	return cmd.Output()
+}
+func findProjectPaths(rootDir string) (dirs []string, err error) {
 	filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
 		if !info.IsDir() && info.Name() == configFileName {
 			dirs = append(dirs, path.Dir(p))
@@ -40,14 +54,24 @@ func FindProjectPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func FindProjects(rootDir string) []Project {
+func FindProjects(rootDir string) map[string]Project {
 	if rootDir == "" {
 		rootDir = repo.Root()
 	}
-	projects := make([]Project, 0)
-	paths, _ := FindProjectPaths(rootDir)
+	projects := make(map[string]Project)
+	paths, _ := findProjectPaths(rootDir)
 	for _, p := range paths {
-		projects = append(projects, ReadConfig(p))
+		projects[p] = readConfig(p)
+	}
+	return projects
+}
+
+func FindUpdatedProjects(rootDir string) map[string]Project {
+	projects := make(map[string]Project)
+	for name, project := range FindProjects(rootDir) {
+		if project.WasUpdated() {
+			projects[name] = project
+		}
 	}
 	return projects
 }
@@ -67,21 +91,17 @@ func (p Project) ignored(file string) bool {
 	return false
 }
 
-func (p Project) include(file string) bool {
-	return strings.HasPrefix(file, p.Dir) && !p.ignored(file)
-}
-
+// Run execute a command by its name
 func (p Project) Run(s string) ([]byte, error) {
 	script, ok := p.Scripts[s]
 	if !ok {
 		return nil, fmt.Errorf("script %s not available", s)
 	}
-	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.Dir
-	return cmd.Output()
+	return p.exec(script)
 }
 
-func ReadConfig(dir string) (p Project) {
+// readConfig reads current config in directory
+func readConfig(dir string) (p Project) {
 	v := viper.New()
 	v.RegisterAlias("version", "version_script")
 	v.SetConfigFile(path.Join(dir, configFileName))
@@ -121,34 +141,17 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func UpdatedProjects(rootDir string) map[string]Project {
-	if rootDir == "" {
-		rootDir = repo.Root()
-	}
-	projects := make(map[string]Project)
-	paths, _ := FindProjectPaths(rootDir)
-	for _, p := range paths {
-		c := ReadConfig(p)
-		if c.WasUpdated() {
-			projects[p] = c
-		}
-	}
-	return projects
-}
-
 func (p Project) version() string {
 	if p.VersionScript == "" {
 		log.Fatalf("no version available in %s", p.Dir)
 	}
-	cmd := exec.Command("sh", "-c", p.VersionScript)
-	cmd.Dir = p.Dir
-	v, _ := cmd.Output()
+	v, _ := p.exec(p.VersionScript)
 	return string(v)
 }
 
 func (p Project) WasUpdated() bool {
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
-		if p.include(f) {
+		if strings.HasPrefix(f, p.Dir) && !p.ignored(f) {
 			return true
 		}
 	}

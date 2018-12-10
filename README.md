@@ -54,11 +54,11 @@ On `master` branch test the updated projects the previous commit
 - [x] Handle project version
 - [x] List projects
 - [x] Add context dir option
+- [x] Fix verbose flag
+- [x] Handle `git`'s tag
+- [x] Handle builds
 - [ ] Remove `git`'s `.Exec` and do it through a library
-- [ ] Handle `git`'s tag
-- [ ] Fix verbose flag
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
-- [ ] Handle builds
 - [ ] Add `gally init` subcommand
 - [ ] Add `-f` option to bypass strategies
 - [ ] Add `-p` option to select project by name
