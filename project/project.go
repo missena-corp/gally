@@ -36,8 +36,11 @@ func BuildTag(tag string, rootDir string) ([]byte, error) {
 	if len(sp) != 2 {
 		return nil, fmt.Errorf("%s is not a valid tag", tag)
 	}
-	p := Find(sp[0], rootDir)
-	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=%s", sp[1]))
+	return Find(sp[0], rootDir).buildVersion(sp[1])
+}
+
+func (p Project) buildVersion(version string) ([]byte, error) {
+	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
 }
 
 func (p Project) exec(str string, env ...string) ([]byte, error) {
