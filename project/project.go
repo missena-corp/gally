@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/missena-corp/gally/repo"
+	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/viper"
 )
 
@@ -76,8 +77,13 @@ func FindAll(rootDir string) map[string]Project {
 	}
 	projects := make(map[string]Project)
 	paths, _ := findPaths(rootDir)
-	for _, p := range paths {
-		projects[p] = readConfig(p)
+	names := make(map[string]bool)
+	for _, path := range paths {
+		p := New(path)
+		projects[path] = p
+		if v, _ := names[p.Name]; v {
+			jww.FATAL.Fatalf("project with name %s already defined", p.Name)
+		}
 	}
 	return projects
 }
@@ -116,8 +122,9 @@ func (p Project) Run(s string) ([]byte, error) {
 	return p.exec(script)
 }
 
-// readConfig reads current config in directory
-func readConfig(dir string) (p Project) {
+// New reads current config in directory
+// the function is expecting full path as argument
+func New(dir string) (p Project) {
 	v := viper.New()
 	v.RegisterAlias("version", "version_script")
 	v.SetConfigFile(path.Join(dir, configFileName))
@@ -126,6 +133,9 @@ func readConfig(dir string) (p Project) {
 	}
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
+	}
+	if p.Name == "" {
+		p.Name = filepath.Base(dir)
 	}
 	p.Dir = dir
 	return p
