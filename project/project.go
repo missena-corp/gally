@@ -84,6 +84,7 @@ func FindAll(rootDir string) map[string]Project {
 		if v, _ := names[p.Name]; v {
 			jww.FATAL.Fatalf("project with name %s already defined", p.Name)
 		}
+		names[p.Name] = true
 	}
 	return projects
 }
