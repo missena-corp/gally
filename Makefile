@@ -1,10 +1,8 @@
-.PHONY: goreleaser
-goreleaser:
-	@go get github.com/goreleaser/goreleaser && go install github.com/goreleaser/goreleaser
+SHELL = /bin/bash
 
 .PHONY: release
-release: goreleaser
-	@goreleaser --rm-dist
+release:
+	@curl -sL https://git.io/goreleaser | bash
 
 .PHONY: tag
 tag:
