@@ -1,8 +1,7 @@
 package project
 
 import (
-	"bytes"
-	"log"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,11 +9,14 @@ import (
 )
 
 func captureOutput(f func()) []byte {
-	var buf bytes.Buffer
-	log.SetOutput(&buf)
+	rescueStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
 	f()
-	log.SetOutput(os.Stdout)
-	return buf.Bytes()
+	w.Close()
+	out, _ := ioutil.ReadAll(r)
+	os.Stdout = rescueStdout
+	return out
 }
 
 func TestBuildVersion(t *testing.T) {

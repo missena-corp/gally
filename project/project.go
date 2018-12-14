@@ -125,7 +125,6 @@ func (p Project) Run(s string) error {
 	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), env...)
 	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
 		return err
