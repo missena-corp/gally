@@ -1,7 +1,8 @@
 language: go
-before_install:
-  - go get -u github.com/golang/dep/...
-  - dep ensure
+go:
+  - "1.11.x"
+env:
+  - GO111MODULE=on
 script:
   - make test
 after_success:
