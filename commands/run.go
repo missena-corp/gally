@@ -17,11 +17,9 @@ var runCmd = &cobra.Command{
 		projects := project.FindAllUpdated(rootDir)
 		script := args[0]
 		for _, p := range projects {
-			out, err := p.Run(script)
-			if err != nil {
+			if err := p.Run(script); err != nil {
 				jww.ERROR.Fatalf("could not run properly script %s: %v", script, err)
 			}
-			jww.INFO.Printf(string(out))
 		}
 	},
 }

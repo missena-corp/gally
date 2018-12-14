@@ -114,13 +114,23 @@ func (p Project) ignored(file string) bool {
 	return false
 }
 
-// Run execute a command by its name
-func (p Project) Run(s string) ([]byte, error) {
+// Run a command by its name
+func (p Project) Run(s string) error {
 	script, ok := p.Scripts[s]
 	if !ok {
-		return nil, fmt.Errorf("script %s not available", s)
+		return fmt.Errorf("script %s not available", s)
 	}
-	return p.exec(script)
+	env := []string{fmt.Sprintf("GALLY_NAME=%s", p.Name)}
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = p.Dir
+	cmd.Env = append(os.Environ(), env...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Wait()
 }
 
 // New reads current config in directory
