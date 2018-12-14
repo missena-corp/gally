@@ -13,7 +13,7 @@ func captureOutput(f func()) []byte {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	f()
-	log.SetOutput(os.Stderr)
+	log.SetOutput(os.Stdout)
 	return buf.Bytes()
 }
 
