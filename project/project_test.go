@@ -1,10 +1,21 @@
 package project
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func captureOutput(f func()) []byte {
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	f()
+	log.SetOutput(os.Stderr)
+	return buf.Bytes()
+}
 
 func TestBuildVersion(t *testing.T) {
 	t.Parallel()
@@ -15,14 +26,6 @@ func TestBuildVersion(t *testing.T) {
 		t.FailNow()
 	}
 	expected := []byte("go building test!\n")
-	if !cmp.Equal(out, expected) {
-		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
-		t.FailNow()
-	}
-
-	expected = []byte("project.go\nproject_test.go\n")
-	c = Project{Scripts: map[string]string{"list": "ls"}}
-	out, err = c.Run("list")
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
 		t.FailNow()
@@ -45,13 +48,14 @@ func TestFindProjectPaths(t *testing.T) {
 
 func TestRun(t *testing.T) {
 	t.Parallel()
-	c := Project{Scripts: map[string]string{"hello": "echo world"}}
-	out, err := c.Run("hello")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
 	expected := []byte("world\n")
+	c := Project{Scripts: map[string]string{"hello": "echo world"}}
+	out := captureOutput(func() {
+		if err := c.Run("hello"); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	})
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
 		t.FailNow()
@@ -59,7 +63,12 @@ func TestRun(t *testing.T) {
 
 	expected = []byte("project.go\nproject_test.go\n")
 	c = Project{Scripts: map[string]string{"list": "ls"}}
-	out, err = c.Run("list")
+	out = captureOutput(func() {
+		if err := c.Run("list"); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	})
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
 		t.FailNow()
