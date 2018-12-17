@@ -79,4 +79,3 @@ Builds are handled with the `build:` explaining how to run them.
 - [ ] Add `gally init` subcommand
 - [ ] Add `-f` option to bypass strategies
 - [ ] Add `-p` option to select project by name
-- [ ] Use channels to allow tests function `captureOutput` to run in parallel

@@ -24,7 +24,6 @@ func captureOutput(f func()) []byte {
 	return out
 }
 
-// not parallel, as we can capture stdout in parallel
 func TestBuildVersion(t *testing.T) {
 	t.Parallel()
 	c := Project{Build: "echo go building $GALLY_VERSION!"}
@@ -55,7 +54,6 @@ func TestFindProjectPaths(t *testing.T) {
 	}
 }
 
-// not parallel, as we can capture stdout in parallel
 func TestRun(t *testing.T) {
 	t.Parallel()
 	expected := []byte("world\n")
