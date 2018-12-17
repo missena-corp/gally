@@ -3,12 +3,16 @@ package project
 import (
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
+var limitStdout sync.Mutex
+
 func captureOutput(f func()) []byte {
+	limitStdout.Lock()
 	rescueStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -16,11 +20,13 @@ func captureOutput(f func()) []byte {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
+	limitStdout.Unlock()
 	return out
 }
 
 // not parallel, as we can capture stdout in parallel
 func TestBuildVersion(t *testing.T) {
+	t.Parallel()
 	c := Project{Build: "echo go building $GALLY_VERSION!"}
 	out := captureOutput(func() {
 		if err := c.buildVersion("test"); err != nil {
@@ -51,6 +57,7 @@ func TestFindProjectPaths(t *testing.T) {
 
 // not parallel, as we can capture stdout in parallel
 func TestRun(t *testing.T) {
+	t.Parallel()
 	expected := []byte("world\n")
 	c := Project{Scripts: map[string]string{"hello": "echo world"}}
 	out := captureOutput(func() {
