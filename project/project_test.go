@@ -19,14 +19,15 @@ func captureOutput(f func()) []byte {
 	return out
 }
 
+// not parallel, as we can capture stdout in parallel
 func TestBuildVersion(t *testing.T) {
-	t.Parallel()
 	c := Project{Build: "echo go building $GALLY_VERSION!"}
-	out, err := c.buildVersion("test")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
+	out := captureOutput(func() {
+		if err := c.buildVersion("test"); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	})
 	expected := []byte("go building test!\n")
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
@@ -48,8 +49,8 @@ func TestFindProjectPaths(t *testing.T) {
 	}
 }
 
+// not parallel, as we can capture stdout in parallel
 func TestRun(t *testing.T) {
-	t.Parallel()
 	expected := []byte("world\n")
 	c := Project{Scripts: map[string]string{"hello": "echo world"}}
 	out := captureOutput(func() {
