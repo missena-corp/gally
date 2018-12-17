@@ -32,21 +32,21 @@ type Strategy struct {
 	Only   string
 }
 
-func BuildTag(tag string, rootDir string) ([]byte, error) {
+func BuildTag(tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
 	if len(sp) != 2 {
-		return nil, fmt.Errorf("%s is not a valid tag", tag)
+		return fmt.Errorf("%s is not a valid tag", tag)
 	}
 	p := Find(sp[0], rootDir)
 	version := p.version()
 	if version != "" && version != sp[1] {
-		return nil, fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
+		return fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
 	}
 	return p.buildVersion(version)
 }
 
-func (p Project) buildVersion(version string) ([]byte, error) {
-	return p.exec(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
+func (p Project) buildVersion(version string) error {
+	return p.run(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
 }
 
 func (p Project) exec(str string, env ...string) ([]byte, error) {
@@ -114,13 +114,9 @@ func (p Project) ignored(file string) bool {
 	return false
 }
 
-// Run a command by its name
-func (p Project) Run(s string) error {
-	script, ok := p.Scripts[s]
-	if !ok {
-		return fmt.Errorf("script %s not available", s)
-	}
-	env := []string{fmt.Sprintf("GALLY_NAME=%s", p.Name)}
+// run a command script for a project
+func (p Project) run(script string, env ...string) error {
+	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), env...)
@@ -132,6 +128,15 @@ func (p Project) Run(s string) error {
 		return err
 	}
 	return cmd.Wait()
+}
+
+// Run a command by its name
+func (p Project) Run(s string) error {
+	script, ok := p.Scripts[s]
+	if !ok {
+		return fmt.Errorf("script %s not available", s)
+	}
+	return p.run(script)
 }
 
 // New reads current config in directory

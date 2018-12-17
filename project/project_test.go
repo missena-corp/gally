@@ -3,12 +3,16 @@ package project
 import (
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
 
+var limitStdout sync.Mutex
+
 func captureOutput(f func()) []byte {
+	limitStdout.Lock()
 	rescueStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -16,17 +20,19 @@ func captureOutput(f func()) []byte {
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
+	limitStdout.Unlock()
 	return out
 }
 
 func TestBuildVersion(t *testing.T) {
 	t.Parallel()
 	c := Project{Build: "echo go building $GALLY_VERSION!"}
-	out, err := c.buildVersion("test")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
+	out := captureOutput(func() {
+		if err := c.buildVersion("test"); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	})
 	expected := []byte("go building test!\n")
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)

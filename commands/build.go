@@ -17,11 +17,9 @@ var buildCmd = &cobra.Command{
 			jww.INFO.Printf("no tag provided")
 			return
 		}
-		out, err := project.BuildTag(tag, rootDir)
-		if err != nil {
+		if err := project.BuildTag(tag, rootDir); err != nil {
 			jww.ERROR.Fatalf("could not build properly project: %v", err)
 		}
-		jww.INFO.Printf(string(out))
 	},
 }
 
