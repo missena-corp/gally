@@ -26,9 +26,9 @@ func captureOutput(f func()) []byte {
 
 func TestBuildVersion(t *testing.T) {
 	t.Parallel()
-	c := Project{Build: "echo go building $GALLY_VERSION!"}
+	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
 	out := captureOutput(func() {
-		if err := c.buildVersion("test"); err != nil {
+		if err := c.runBuild("test"); err != nil {
 			t.Error(err)
 			t.FailNow()
 		}
