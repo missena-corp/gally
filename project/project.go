@@ -17,7 +17,7 @@ import (
 const configFileName = ".gally.yml"
 
 type Project struct {
-	Build         string
+	BuildScript   string `mapstructure:"build"`
 	Dir           string
 	ConfigFile    string
 	Ignore        []string
@@ -42,6 +42,7 @@ func BuildTag(tag string, rootDir string) error {
 		return fmt.Errorf("project %q not found", sp[0])
 	}
 	version := p.version()
+	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
 		return fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
 	}
@@ -137,7 +138,7 @@ func (p *Project) run(script string, env ...string) error {
 }
 
 func (p Project) runBuild(version string) error {
-	return p.run(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
+	return p.run(p.BuildScript, fmt.Sprintf("GALLY_VERSION=%s", version))
 }
 
 // New reads current config in directory
