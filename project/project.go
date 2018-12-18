@@ -38,18 +38,17 @@ func BuildTag(tag string, rootDir string) error {
 		return fmt.Errorf("%s is not a valid tag", tag)
 	}
 	p := Find(sp[0], rootDir)
+	if p == nil {
+		return fmt.Errorf("project %q not found", sp[0])
+	}
 	version := p.version()
 	if version != "" && version != sp[1] {
 		return fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
 	}
-	return p.buildVersion(version)
+	return p.runBuild(version)
 }
 
-func (p Project) buildVersion(version string) error {
-	return p.run(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
-}
-
-func (p Project) exec(str string, env ...string) ([]byte, error) {
+func (p *Project) exec(str string, env ...string) ([]byte, error) {
 	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.Dir
@@ -57,7 +56,7 @@ func (p Project) exec(str string, env ...string) ([]byte, error) {
 	return cmd.Output()
 }
 
-func Find(name string, rootDir string) Project {
+func Find(name string, rootDir string) *Project {
 	return FindAll(rootDir)[name]
 }
 
@@ -71,26 +70,24 @@ func findPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func FindAll(rootDir string) map[string]Project {
+func FindAll(rootDir string) map[string]*Project {
 	if rootDir == "" {
 		rootDir = repo.Root()
 	}
-	projects := make(map[string]Project)
+	projects := make(map[string]*Project)
 	paths, _ := findPaths(rootDir)
-	names := make(map[string]bool)
 	for _, path := range paths {
 		p := New(path)
-		projects[path] = p
-		if v, _ := names[p.Name]; v {
-			jww.FATAL.Fatalf("project with name %s already defined", p.Name)
+		if d, _ := projects[p.Name]; d != nil {
+			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.Dir)
 		}
-		names[p.Name] = true
+		projects[p.Name] = p
 	}
 	return projects
 }
 
-func FindAllUpdated(rootDir string) map[string]Project {
-	projects := make(map[string]Project)
+func FindAllUpdated(rootDir string) map[string]*Project {
+	projects := make(map[string]*Project)
 	for name, project := range FindAll(rootDir) {
 		if project.WasUpdated() {
 			projects[name] = project
@@ -114,9 +111,18 @@ func (p Project) ignored(file string) bool {
 	return false
 }
 
+// Run a command by its name
+func (p *Project) Run(s string) error {
+	script, ok := p.Scripts[s]
+	if !ok {
+		return fmt.Errorf("script %s not available", s)
+	}
+	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.version()))
+}
+
 // run a command script for a project
-func (p Project) run(script string, env ...string) error {
-	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
+func (p *Project) run(script string, env ...string) error {
+	env = append(env, fmt.Sprintf("GALLY_DIR=%s", p.Dir), fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), env...)
@@ -130,18 +136,13 @@ func (p Project) run(script string, env ...string) error {
 	return cmd.Wait()
 }
 
-// Run a command by its name
-func (p Project) Run(s string) error {
-	script, ok := p.Scripts[s]
-	if !ok {
-		return fmt.Errorf("script %s not available", s)
-	}
-	return p.run(script)
+func (p Project) runBuild(version string) error {
+	return p.run(p.Build, fmt.Sprintf("GALLY_VERSION=%s", version))
 }
 
 // New reads current config in directory
 // the function is expecting full path as argument
-func New(dir string) (p Project) {
+func New(dir string) (p *Project) {
 	v := viper.New()
 	v.RegisterAlias("version", "version_script")
 	v.SetConfigFile(path.Join(dir, configFileName))
@@ -186,7 +187,8 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p Project) version() string {
 	if p.VersionScript == "" {
-		log.Fatalf("no version available in %s", p.Dir)
+		jww.ERROR.Printf("no version available in %q", p.Dir)
+		return ""
 	}
 	v, _ := p.exec(p.VersionScript)
 	return string(v)
