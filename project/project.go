@@ -97,7 +97,7 @@ func FindAllUpdated(rootDir string) map[string]*Project {
 	return projects
 }
 
-func (p Project) ignored(file string) bool {
+func (p *Project) ignored(file string) bool {
 	for _, pattern := range p.Ignore {
 		files, err := filepath.Glob(pattern)
 		if err != nil {
@@ -137,7 +137,7 @@ func (p *Project) run(script string, env ...string) error {
 	return cmd.Wait()
 }
 
-func (p Project) runBuild(version string) error {
+func (p *Project) runBuild(version string) error {
 	return p.run(p.BuildScript, fmt.Sprintf("GALLY_VERSION=%s", version))
 }
 
@@ -185,7 +185,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func (p Project) version() string {
+func (p *Project) version() string {
 	if p.VersionScript == "" {
 		jww.ERROR.Printf("no version available in %q", p.Dir)
 		return ""
@@ -194,7 +194,7 @@ func (p Project) version() string {
 	return string(v)
 }
 
-func (p Project) WasUpdated() bool {
+func (p *Project) WasUpdated() bool {
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
 		if strings.HasPrefix(f, p.Dir) && !p.ignored(f) {
 			return true
