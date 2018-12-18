@@ -24,7 +24,7 @@ type Project struct {
 	Name          string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
-	VersionScript string
+	VersionScript string `mapstructure:"version"`
 }
 
 type Strategy struct {
@@ -144,7 +144,6 @@ func (p Project) runBuild(version string) error {
 // the function is expecting full path as argument
 func New(dir string) (p *Project) {
 	v := viper.New()
-	v.RegisterAlias("version", "version_script")
 	v.SetConfigFile(path.Join(dir, configFileName))
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file, %s", err)
