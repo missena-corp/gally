@@ -138,7 +138,11 @@ func (p *Project) run(script string, env ...string) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	return p.run(p.BuildScript, fmt.Sprintf("GALLY_VERSION=%s", version))
+	return p.run(
+		p.BuildScript,
+		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
+		fmt.Sprintf("GALLY_VERSION=%s", version),
+	)
 }
 
 // New reads current config in directory
