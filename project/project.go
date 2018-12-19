@@ -163,13 +163,20 @@ func New(dir string) (p *Project) {
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
 	}
+	p.Dir = dir
 	if p.ContextDir == "" {
 		p.ContextDir = dir
+	} else {
+		if !path.IsAbs(p.ContextDir) {
+			p.ContextDir = path.Join(dir, p.ContextDir)
+		}
+		if _, err := os.Stat(p.ContextDir); os.IsNotExist(err) {
+			log.Fatalf("context directory %q does not exist", p.ContextDir)
+		}
 	}
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
 	}
-	p.Dir = dir
 	return p
 }
 
