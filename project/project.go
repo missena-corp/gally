@@ -36,7 +36,7 @@ type Strategy struct {
 func BuildTag(tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
 	if len(sp) != 2 {
-		return fmt.Errorf("%s is not a valid tag", tag)
+		return fmt.Errorf("%q is not a valid tag", tag)
 	}
 	p := Find(sp[0], rootDir)
 	if p == nil {
@@ -45,16 +45,23 @@ func BuildTag(tag string, rootDir string) error {
 	version := p.version()
 	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
-		return fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
+		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
 	}
 	return p.runBuild(version)
 }
 
+func (p *Project) env(env []string) []string {
+	return append(
+		env,
+		fmt.Sprintf("GALLY_CWD=%s", p.ContextDir),
+		fmt.Sprintf("GALLY_NAME=%s", p.Name),
+	)
+}
+
 func (p *Project) exec(str string, env ...string) ([]byte, error) {
-	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.ContextDir
-	cmd.Env = append(os.Environ(), env...)
+	cmd.Env = append(os.Environ(), p.env(env)...)
 	return cmd.Output()
 }
 
@@ -124,10 +131,9 @@ func (p *Project) Run(s string) error {
 
 // run a command script for a project
 func (p *Project) run(script string, env ...string) error {
-	env = append(env, fmt.Sprintf("GALLY_DIR=%s", p.Dir), fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.ContextDir
-	cmd.Env = append(os.Environ(), env...)
+	cmd.Env = append(os.Environ(), p.env(env)...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
