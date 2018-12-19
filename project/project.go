@@ -20,6 +20,7 @@ type Project struct {
 	BuildScript   string `mapstructure:"build"`
 	Dir           string
 	ConfigFile    string
+	ContextDir    string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
 	Scripts       map[string]string
@@ -52,7 +53,7 @@ func BuildTag(tag string, rootDir string) error {
 func (p *Project) exec(str string, env ...string) ([]byte, error) {
 	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", str)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.ContextDir
 	cmd.Env = append(os.Environ(), env...)
 	return cmd.Output()
 }
@@ -125,7 +126,7 @@ func (p *Project) Run(s string) error {
 func (p *Project) run(script string, env ...string) error {
 	env = append(env, fmt.Sprintf("GALLY_DIR=%s", p.Dir), fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.ContextDir
 	cmd.Env = append(os.Environ(), env...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -155,6 +156,9 @@ func New(dir string) (p *Project) {
 	}
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode into struct, %v", err)
+	}
+	if p.ContextDir == "" {
+		p.ContextDir = dir
 	}
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
