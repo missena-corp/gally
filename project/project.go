@@ -20,7 +20,7 @@ type Project struct {
 	BaseDir       string `mapstructure:"-"`
 	BuildScript   string `mapstructure:"build"`
 	ConfigFile    string
-	ContextDir    string `mapstructure:"context"`
+	Dir           string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
 	Scripts       map[string]string
@@ -53,14 +53,14 @@ func BuildTag(tag string, rootDir string) error {
 func (p *Project) env(env []string) []string {
 	return append(
 		env,
-		fmt.Sprintf("GALLY_CWD=%s", p.ContextDir),
+		fmt.Sprintf("GALLY_CWD=%s", p.Dir),
 		fmt.Sprintf("GALLY_NAME=%s", p.Name),
 	)
 }
 
 func (p *Project) exec(str string, env ...string) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", str)
-	cmd.Dir = p.ContextDir
+	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), p.env(env)...)
 	return cmd.Output()
 }
@@ -132,7 +132,7 @@ func (p *Project) Run(s string) error {
 // run a command script for a project
 func (p *Project) run(script string, env ...string) error {
 	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.ContextDir
+	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), p.env(env)...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -165,14 +165,14 @@ func New(dir string) (p *Project) {
 		log.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 	p.BaseDir = dir
-	if p.ContextDir == "" {
-		p.ContextDir = dir
+	if p.Dir == "" {
+		p.Dir = dir
 	} else {
-		if !path.IsAbs(p.ContextDir) {
-			p.ContextDir = path.Join(dir, p.ContextDir)
+		if !path.IsAbs(p.Dir) {
+			p.Dir = path.Join(dir, p.Dir)
 		}
-		if _, err := os.Stat(p.ContextDir); os.IsNotExist(err) {
-			log.Fatalf("context directory %q does not exist", p.ContextDir)
+		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
+			log.Fatalf("context directory %q does not exist", p.Dir)
 		}
 	}
 	if p.Name == "" {
