@@ -1,9 +1,8 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
-	"os"
-	"text/tabwriter"
 
 	"github.com/missena-corp/gally/project"
 	"github.com/spf13/cobra"
@@ -16,12 +15,8 @@ var listCmd = &cobra.Command{
 	Short: "display all handled projects",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.Debug)
-		fmt.Fprintf(w, "Name\t Directory\t\n")
-		for _, p := range project.FindAll(rootDir) {
-			fmt.Fprintf(w, "%s\t %s\t\n", p.Name, p.BaseDir)
-		}
-		w.Flush()
+		out, _ := json.MarshalIndent(project.FindAll(rootDir).ToSlice(), "", "\t")
+		fmt.Println(string(out))
 	},
 }
 
