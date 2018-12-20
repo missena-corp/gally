@@ -120,6 +120,42 @@ func (p *Project) ignored(file string) bool {
 	return false
 }
 
+// New reads current config in directory
+// the function is expecting full path as argument
+func New(dir string) (p *Project) {
+	v := viper.New()
+	if !path.IsAbs(dir) {
+		d, err := filepath.Abs(dir)
+		if err != nil {
+			log.Fatalf("unable to expand directory %q: %v", d, err)
+		}
+		dir = d
+	}
+	file := path.Join(dir, configFileName)
+	v.SetConfigFile(file)
+	if err := v.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file %q: %v", file, err)
+	}
+	if err := v.Unmarshal(&p); err != nil {
+		log.Fatalf("unable to decode file %s into struct: %v", file, err)
+	}
+	p.BaseDir = dir
+	if p.Dir == "" {
+		p.Dir = dir
+	} else {
+		if !path.IsAbs(p.Dir) {
+			p.Dir = path.Join(dir, p.Dir)
+		}
+		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
+			log.Fatalf("context directory %q does not exist", p.Dir)
+		}
+	}
+	if p.Name == "" {
+		p.Name = filepath.Base(dir)
+	}
+	return p
+}
+
 // Run a command by its name
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
@@ -150,35 +186,6 @@ func (p *Project) runBuild(version string) error {
 		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
 		fmt.Sprintf("GALLY_VERSION=%s", version),
 	)
-}
-
-// New reads current config in directory
-// the function is expecting full path as argument
-func New(dir string) (p *Project) {
-	v := viper.New()
-	file := path.Join(dir, configFileName)
-	v.SetConfigFile(file)
-	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file %q: %v", file, err)
-	}
-	if err := v.Unmarshal(&p); err != nil {
-		log.Fatalf("unable to decode file %s into struct: %v", file, err)
-	}
-	p.BaseDir = dir
-	if p.Dir == "" {
-		p.Dir = dir
-	} else {
-		if !path.IsAbs(p.Dir) {
-			p.Dir = path.Join(dir, p.Dir)
-		}
-		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-			log.Fatalf("context directory %q does not exist", p.Dir)
-		}
-	}
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
-	}
-	return p
 }
 
 func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
