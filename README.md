@@ -77,5 +77,6 @@ Builds are handled with the `build:` explaining how to run them.
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Add `gally init` subcommand
-- [ ] Add `-f` option to bypass strategies
+- [ ] Add `-f` option on run to bypass strategies
+- [ ] Add `-f` option on build not based on git tag
 - [ ] Add `-p` option to select project by name
