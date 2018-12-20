@@ -5,24 +5,25 @@ import (
 	"runtime"
 
 	"github.com/missena-corp/gally/helpers"
+	"github.com/missena-corp/gally/project"
 	"github.com/spf13/cobra"
-	jww "github.com/spf13/jwalterweatherman"
 )
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Gally version's number",
 	Run: func(cmd *cobra.Command, args []string) {
-		printGallyVersion()
+		if len(args) == 0 {
+			fmt.Println(gallyVersionString())
+			return
+		}
+		p := project.Find(args[0], rootDir)
+		fmt.Println(p.Version())
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
-}
-
-func printGallyVersion() {
-	jww.FEEDBACK.Println(gallyVersionString())
 }
 
 func gallyVersionString() string {

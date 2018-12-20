@@ -17,9 +17,10 @@ import (
 const configFileName = ".gally.yml"
 
 type Project struct {
+	BaseDir       string `mapstructure:"-"`
 	BuildScript   string `mapstructure:"build"`
-	Dir           string
 	ConfigFile    string
+	Dir           string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
 	Scripts       map[string]string
@@ -35,25 +36,32 @@ type Strategy struct {
 func BuildTag(tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
 	if len(sp) != 2 {
-		return fmt.Errorf("%s is not a valid tag", tag)
+		return fmt.Errorf("%q is not a valid tag", tag)
 	}
 	p := Find(sp[0], rootDir)
 	if p == nil {
 		return fmt.Errorf("project %q not found", sp[0])
 	}
-	version := p.version()
+	version := p.Version()
 	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
-		return fmt.Errorf("versions mismatch: %s≠%s", sp[1], version)
+		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
 	}
 	return p.runBuild(version)
 }
 
+func (p *Project) env(env []string) []string {
+	return append(
+		env,
+		fmt.Sprintf("GALLY_CWD=%s", p.Dir),
+		fmt.Sprintf("GALLY_NAME=%s", p.Name),
+	)
+}
+
 func (p *Project) exec(str string, env ...string) ([]byte, error) {
-	env = append(env, fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), env...)
+	cmd.Env = append(os.Environ(), p.env(env)...)
 	return cmd.Output()
 }
 
@@ -80,7 +88,7 @@ func FindAll(rootDir string) map[string]*Project {
 	for _, path := range paths {
 		p := New(path)
 		if d, _ := projects[p.Name]; d != nil {
-			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.Dir)
+			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.BaseDir)
 		}
 		projects[p.Name] = p
 	}
@@ -116,17 +124,16 @@ func (p *Project) ignored(file string) bool {
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
 	if !ok {
-		return fmt.Errorf("script %s not available", s)
+		return fmt.Errorf("script %q not available", s)
 	}
-	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.version()))
+	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
 }
 
 // run a command script for a project
 func (p *Project) run(script string, env ...string) error {
-	env = append(env, fmt.Sprintf("GALLY_DIR=%s", p.Dir), fmt.Sprintf("GALLY_NAME=%s", p.Name))
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), env...)
+	cmd.Env = append(os.Environ(), p.env(env)...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -138,24 +145,39 @@ func (p *Project) run(script string, env ...string) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	return p.run(p.BuildScript, fmt.Sprintf("GALLY_VERSION=%s", version))
+	return p.run(
+		p.BuildScript,
+		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
+		fmt.Sprintf("GALLY_VERSION=%s", version),
+	)
 }
 
 // New reads current config in directory
 // the function is expecting full path as argument
 func New(dir string) (p *Project) {
 	v := viper.New()
-	v.SetConfigFile(path.Join(dir, configFileName))
+	file := path.Join(dir, configFileName)
+	v.SetConfigFile(file)
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file, %s", err)
+		log.Fatalf("Error reading config file %q: %v", file, err)
 	}
 	if err := v.Unmarshal(&p); err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
+		log.Fatalf("unable to decode file %s into struct: %v", file, err)
+	}
+	p.BaseDir = dir
+	if p.Dir == "" {
+		p.Dir = dir
+	} else {
+		if !path.IsAbs(p.Dir) {
+			p.Dir = path.Join(dir, p.Dir)
+		}
+		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
+			log.Fatalf("context directory %q does not exist", p.Dir)
+		}
 	}
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
 	}
-	p.Dir = dir
 	return p
 }
 
@@ -163,13 +185,13 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	files := make([]string, 0)
 	for name, opts := range strategies {
 		switch name {
-		case "compare-to":
+		case COMPARE_TO:
 			res, err := repo.UpdatedFiles(opts.Branch)
 			if err != nil {
 				continue
 			}
 			files = append(files, res...)
-		case "previous-commit":
+		case PREVIOUS_COMMIT:
 			if !repo.IsOnBranch(opts.Only) {
 				continue
 			}
@@ -185,9 +207,9 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func (p *Project) version() string {
+func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		jww.ERROR.Printf("no version available in %q", p.Dir)
+		jww.ERROR.Printf("no version available in %q", p.BaseDir)
 		return ""
 	}
 	v, _ := p.exec(p.VersionScript)
@@ -196,7 +218,7 @@ func (p *Project) version() string {
 
 func (p *Project) WasUpdated() bool {
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
-		if strings.HasPrefix(f, p.Dir) && !p.ignored(f) {
+		if strings.HasPrefix(f, p.BaseDir) && !p.ignored(f) {
 			return true
 		}
 	}

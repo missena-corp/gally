@@ -19,7 +19,7 @@ var listCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.Debug)
 		fmt.Fprintf(w, "Name\t Directory\t\n")
 		for _, p := range project.FindAll(rootDir) {
-			fmt.Fprintf(w, "%s\t %s\t\n", p.Name, p.Dir)
+			fmt.Fprintf(w, "%s\t %s\t\n", p.Name, p.BaseDir)
 		}
 		w.Flush()
 	},

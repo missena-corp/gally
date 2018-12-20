@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 		t.FailNow()
 	}
 
-	expected = []byte("project.go\nproject_test.go\n")
+	expected = []byte("project.go\nproject_test.go\nstrategies.go\n")
 	c = Project{Scripts: map[string]string{"list": "ls"}}
 	out = captureOutput(func() {
 		if err := c.Run("list"); err != nil {
@@ -87,8 +87,8 @@ func TestVersion(t *testing.T) {
 	t.Parallel()
 	c := Project{Dir: "../_examples", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
-	if c.version() != expected {
-		t.Errorf("version must be equal to %s", expected)
+	if c.Version() != expected {
+		t.Errorf("version must be equal to %q but is actually %q", expected, c.Version())
 		t.FailNow()
 	}
 }
