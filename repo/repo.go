@@ -35,7 +35,7 @@ func Root() string {
 }
 
 func Tag() string {
-	out, err := exec.Command("git", "describe", "--tags").Output()
+	out, err := exec.Command("git", "tag", "--points-at", "HEAD").Output()
 	if err != nil {
 		return ""
 	}

@@ -29,6 +29,8 @@ type Project struct {
 	VersionScript string `mapstructure:"version"`
 }
 
+type Projects map[string]*Project
+
 type Strategy struct {
 	Branch string
 	Only   string
@@ -81,11 +83,11 @@ func findPaths(rootDir string) (dirs []string, err error) {
 	return dirs, nil
 }
 
-func FindAll(rootDir string) map[string]*Project {
+func FindAll(rootDir string) Projects {
 	if rootDir == "" {
 		rootDir = repo.Root()
 	}
-	projects := make(map[string]*Project)
+	projects := make(Projects)
 	paths, _ := findPaths(rootDir)
 	for _, path := range paths {
 		p := New(path, rootDir)
@@ -97,8 +99,8 @@ func FindAll(rootDir string) map[string]*Project {
 	return projects
 }
 
-func FindAllUpdated(rootDir string) map[string]*Project {
-	projects := make(map[string]*Project)
+func FindAllUpdated(rootDir string) Projects {
+	projects := make(Projects)
 	for name, project := range FindAll(rootDir) {
 		if project.WasUpdated() {
 			projects[name] = project
@@ -197,6 +199,19 @@ func (p *Project) runBuild(version string) error {
 	)
 }
 
+func (projs Projects) ToSlice() []map[string]interface{} {
+	out := make([]map[string]interface{}, 0)
+	for _, p := range projs {
+		out = append(out, map[string]interface{}{
+			"directory": p.BaseDir,
+			"name":      p.Name,
+			"update":    p.WasUpdated(),
+			"version":   p.Version(),
+		})
+	}
+	return out
+}
+
 func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	files := make([]string, 0)
 	for name, opts := range strategies {
@@ -229,7 +244,7 @@ func (p *Project) Version() string {
 		return ""
 	}
 	v, _ := p.exec(p.VersionScript)
-	return string(v)
+	return strings.TrimSpace(string(v))
 }
 
 func (p *Project) WasUpdated() bool {
