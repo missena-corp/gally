@@ -42,7 +42,7 @@ func BuildTag(tag string, rootDir string) error {
 	if p == nil {
 		return fmt.Errorf("project %q not found", sp[0])
 	}
-	version := p.version()
+	version := p.Version()
 	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
 		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
@@ -126,7 +126,7 @@ func (p *Project) Run(s string) error {
 	if !ok {
 		return fmt.Errorf("script %s not available", s)
 	}
-	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.version()))
+	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
 }
 
 // run a command script for a project
@@ -206,7 +206,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	return files
 }
 
-func (p *Project) version() string {
+func (p *Project) Version() string {
 	if p.VersionScript == "" {
 		jww.ERROR.Printf("no version available in %q", p.Dir)
 		return ""
