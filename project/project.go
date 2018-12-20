@@ -120,38 +120,6 @@ func (p *Project) ignored(file string) bool {
 	return false
 }
 
-// Run a command by its name
-func (p *Project) Run(s string) error {
-	script, ok := p.Scripts[s]
-	if !ok {
-		return fmt.Errorf("script %q not available", s)
-	}
-	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
-}
-
-// run a command script for a project
-func (p *Project) run(script string, env ...string) error {
-	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), p.env(env)...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	jww.INFO.Printf("running %q in directory %q\n", script, cmd.Dir)
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	return cmd.Wait()
-}
-
-func (p *Project) runBuild(version string) error {
-	return p.run(
-		p.BuildScript,
-		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
-		fmt.Sprintf("GALLY_VERSION=%s", version),
-	)
-}
-
 // New reads current config in directory
 // the function is expecting full path as argument
 func New(dir string) (p *Project) {
@@ -186,6 +154,38 @@ func New(dir string) (p *Project) {
 		p.Name = filepath.Base(dir)
 	}
 	return p
+}
+
+// Run a command by its name
+func (p *Project) Run(s string) error {
+	script, ok := p.Scripts[s]
+	if !ok {
+		return fmt.Errorf("script %q not available", s)
+	}
+	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
+}
+
+// run a command script for a project
+func (p *Project) run(script string, env ...string) error {
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = p.Dir
+	cmd.Env = append(os.Environ(), p.env(env)...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	jww.INFO.Printf("running %q in directory %q\n", script, cmd.Dir)
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Wait()
+}
+
+func (p *Project) runBuild(version string) error {
+	return p.run(
+		p.BuildScript,
+		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
+		fmt.Sprintf("GALLY_VERSION=%s", version),
+	)
 }
 
 func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
