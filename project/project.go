@@ -124,7 +124,7 @@ func (p *Project) ignored(file string) bool {
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
 	if !ok {
-		return fmt.Errorf("script %s not available", s)
+		return fmt.Errorf("script %q not available", s)
 	}
 	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
 }
@@ -156,12 +156,13 @@ func (p *Project) runBuild(version string) error {
 // the function is expecting full path as argument
 func New(dir string) (p *Project) {
 	v := viper.New()
-	v.SetConfigFile(path.Join(dir, configFileName))
+	file := path.Join(dir, configFileName)
+	v.SetConfigFile(file)
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file, %s", err)
+		log.Fatalf("Error reading config file %q: %v", file, err)
 	}
 	if err := v.Unmarshal(&p); err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
+		log.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 	p.Dir = dir
 	if p.ContextDir == "" {
@@ -184,13 +185,13 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 	files := make([]string, 0)
 	for name, opts := range strategies {
 		switch name {
-		case "compare-to":
+		case COMPARE_TO:
 			res, err := repo.UpdatedFiles(opts.Branch)
 			if err != nil {
 				continue
 			}
 			files = append(files, res...)
-		case "previous-commit":
+		case PREVIOUS_COMMIT:
 			if !repo.IsOnBranch(opts.Only) {
 				continue
 			}
