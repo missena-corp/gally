@@ -156,6 +156,13 @@ func (p *Project) runBuild(version string) error {
 // the function is expecting full path as argument
 func New(dir string) (p *Project) {
 	v := viper.New()
+	if !path.IsAbs(dir) {
+		d, err := filepath.Abs(dir)
+		if err != nil {
+			log.Fatalf("unable to expand directory %q: %v", d, err)
+		}
+		dir = d
+	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
 	if err := v.ReadInConfig(); err != nil {

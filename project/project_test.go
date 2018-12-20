@@ -3,6 +3,7 @@ package project
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -24,22 +25,6 @@ func captureOutput(f func()) []byte {
 	return out
 }
 
-func TestBuildVersion(t *testing.T) {
-	t.Parallel()
-	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
-	out := captureOutput(func() {
-		if err := c.runBuild("test"); err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-	})
-	expected := []byte("go building test!\n")
-	if !cmp.Equal(out, expected) {
-		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
-		t.FailNow()
-	}
-}
-
 func TestFindProjectPaths(t *testing.T) {
 	t.Parallel()
 	paths, err := findPaths("..")
@@ -50,6 +35,15 @@ func TestFindProjectPaths(t *testing.T) {
 	expected := []string{"../_examples"}
 	if !cmp.Equal(paths, expected) {
 		t.Errorf("paths %v must be equal to %v", paths, expected)
+		t.FailNow()
+	}
+}
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+	p := New("../_examples")
+	if !strings.HasPrefix(p.BaseDir, p.Dir) {
+		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
 		t.FailNow()
 	}
 }
@@ -83,9 +77,25 @@ func TestRun(t *testing.T) {
 	}
 }
 
+func TestRunBuild(t *testing.T) {
+	t.Parallel()
+	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
+	out := captureOutput(func() {
+		if err := c.runBuild("test"); err != nil {
+			t.Error(err)
+			t.FailNow()
+		}
+	})
+	expected := []byte("go building test!\n")
+	if !cmp.Equal(out, expected) {
+		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
+		t.FailNow()
+	}
+}
+
 func TestVersion(t *testing.T) {
 	t.Parallel()
-	c := Project{Dir: "../_examples", VersionScript: "head -1 VERSION"}
+	c := Project{BaseDir: ".", Dir: "../_examples", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.Version() != expected {
 		t.Errorf("version must be equal to %q but is actually %q", expected, c.Version())
