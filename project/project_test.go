@@ -41,7 +41,7 @@ func TestFindProjectPaths(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	t.Parallel()
-	p := New("../_examples")
+	p := New("../_examples", "..")
 	if !strings.HasPrefix(p.BaseDir, p.Dir) {
 		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
 		t.FailNow()
