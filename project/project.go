@@ -23,6 +23,7 @@ type Project struct {
 	Dir           string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
+	RootDir       string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
 	VersionScript string `mapstructure:"version"`
@@ -55,6 +56,7 @@ func (p *Project) env(env []string) []string {
 		env,
 		fmt.Sprintf("GALLY_CWD=%s", p.Dir),
 		fmt.Sprintf("GALLY_NAME=%s", p.Name),
+		fmt.Sprintf("GALLY_ROOT=%s", p.RootDir),
 	)
 }
 
@@ -86,7 +88,7 @@ func FindAll(rootDir string) map[string]*Project {
 	projects := make(map[string]*Project)
 	paths, _ := findPaths(rootDir)
 	for _, path := range paths {
-		p := New(path)
+		p := New(path, rootDir)
 		if d, _ := projects[p.Name]; d != nil {
 			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.BaseDir)
 		}
@@ -122,7 +124,7 @@ func (p *Project) ignored(file string) bool {
 
 // New reads current config in directory
 // the function is expecting full path as argument
-func New(dir string) (p *Project) {
+func New(dir, rootDir string) (p *Project) {
 	v := viper.New()
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
@@ -152,6 +154,13 @@ func New(dir string) (p *Project) {
 	}
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
+	}
+	if !path.IsAbs(rootDir) {
+		d, err := filepath.Abs(rootDir)
+		if err != nil {
+			log.Fatalf("unable to expand directory %q: %v", d, err)
+		}
+		p.RootDir = d
 	}
 	return p
 }
