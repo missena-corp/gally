@@ -17,8 +17,8 @@ import (
 const configFileName = ".gally.yml"
 
 type Project struct {
+	BaseDir       string `mapstructure:"-"`
 	BuildScript   string `mapstructure:"build"`
-	Dir           string
 	ConfigFile    string
 	ContextDir    string `mapstructure:"context"`
 	Ignore        []string
@@ -88,7 +88,7 @@ func FindAll(rootDir string) map[string]*Project {
 	for _, path := range paths {
 		p := New(path)
 		if d, _ := projects[p.Name]; d != nil {
-			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.Dir)
+			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.BaseDir)
 		}
 		projects[p.Name] = p
 	}
@@ -164,7 +164,7 @@ func New(dir string) (p *Project) {
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
-	p.Dir = dir
+	p.BaseDir = dir
 	if p.ContextDir == "" {
 		p.ContextDir = dir
 	} else {
@@ -209,7 +209,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		jww.ERROR.Printf("no version available in %q", p.Dir)
+		jww.ERROR.Printf("no version available in %q", p.BaseDir)
 		return ""
 	}
 	v, _ := p.exec(p.VersionScript)
@@ -218,7 +218,7 @@ func (p *Project) Version() string {
 
 func (p *Project) WasUpdated() bool {
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
-		if strings.HasPrefix(f, p.Dir) && !p.ignored(f) {
+		if strings.HasPrefix(f, p.BaseDir) && !p.ignored(f) {
 			return true
 		}
 	}
