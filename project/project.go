@@ -16,6 +16,8 @@ import (
 
 const configFileName = ".gally.yml"
 
+var envVars map[string]string
+
 type Project struct {
 	BaseDir       string `mapstructure:"-"`
 	BuildScript   string `mapstructure:"build"`
@@ -53,19 +55,10 @@ func BuildTag(tag string, rootDir string) error {
 	return p.runBuild(version)
 }
 
-func (p *Project) env(env []string) []string {
-	return append(
-		env,
-		fmt.Sprintf("GALLY_CWD=%s", p.Dir),
-		fmt.Sprintf("GALLY_NAME=%s", p.Name),
-		fmt.Sprintf("GALLY_ROOT=%s", p.RootDir),
-	)
-}
-
-func (p *Project) exec(str string, env ...string) ([]byte, error) {
+func (p *Project) exec(str string, env Env) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", str)
 	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), p.env(env)...)
+	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	return cmd.Output()
 }
 
@@ -157,6 +150,7 @@ func New(dir, rootDir string) (p *Project) {
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
 	}
+	p.RootDir = rootDir
 	if !path.IsAbs(rootDir) {
 		d, err := filepath.Abs(rootDir)
 		if err != nil {
@@ -173,14 +167,14 @@ func (p *Project) Run(s string) error {
 	if !ok {
 		return fmt.Errorf("script %q not available", s)
 	}
-	return p.run(script, fmt.Sprintf("GALLY_VERSION=%s", p.Version()))
+	return p.run(script, NewEnv(p))
 }
 
 // run a command script for a project
-func (p *Project) run(script string, env ...string) error {
+func (p *Project) run(script string, env Env) error {
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), p.env(env)...)
+	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -192,21 +186,22 @@ func (p *Project) run(script string, env ...string) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	return p.run(
-		p.BuildScript,
-		fmt.Sprintf("GALLY_TAG=%s@%s", p.Name, version),
-		fmt.Sprintf("GALLY_VERSION=%s", version),
-	)
+	env := NewEnv(p).Add(Env{
+		"GALLY_TAG":     fmt.Sprintf("%s@%s", p.Name, version),
+		"GALLY_VERSION": version,
+	})
+	return p.run(p.BuildScript, env)
 }
 
 func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
 		out = append(out, map[string]interface{}{
-			"directory": p.BaseDir,
-			"name":      p.Name,
-			"update":    p.WasUpdated(),
-			"version":   p.Version(),
+			"directory":   p.BaseDir,
+			"environment": NewEnv(p),
+			"name":        p.Name,
+			"update":      p.WasUpdated(),
+			"version":     p.Version(),
 		})
 	}
 	return out
@@ -243,7 +238,7 @@ func (p *Project) Version() string {
 		jww.ERROR.Printf("no version available in %q", p.BaseDir)
 		return ""
 	}
-	v, _ := p.exec(p.VersionScript)
+	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
 }
 
