@@ -1,6 +1,6 @@
 .PHONY: release
 release:
-	@curl -sL https://git.io/goreleaser | bash
+	@curl -sL https://git.io/goreleaser | bash -s -- release --skip-validate --debug
 
 .PHONY: tag
 tag:
