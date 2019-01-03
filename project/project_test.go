@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 		t.FailNow()
 	}
 
-	expected = []byte("project.go\nproject_test.go\nstrategies.go\n")
+	expected = []byte("env.go\nproject.go\nproject_test.go\nstrategies.go\n")
 	c = Project{Scripts: map[string]string{"list": "ls"}}
 	out = captureOutput(func() {
 		if err := c.Run("list"); err != nil {
