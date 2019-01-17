@@ -8,29 +8,34 @@ Gally helps to manage projects that are part of a monorepository. It provides
 simple tools to detect what project have changed, as well as test and build
 them.
 
-> Requirement: In order for Gally to work, you must have `git` installed and
-  accessible from your path.
+> **Installation**: Download a binary from the [release page]
+
+> **Requirement**: In order for Gally to work, you must have `git` installed
+  and accessible from your path.
 
 ## Configuration
 
-To define a project with Gally, you should create a `.gally.yml` file in the
-project directory. For instance, if you have a project named `simpleapi` in
-the `/apps/simpleapi` directory of your monorepository, create a file
-`.gally.yml` in this directory.
+To define a project with Gally, create a `.gally.yml` file in the directory
+that conatins the project. For instance, if you have a project named
+`simpleapi` in the `/apps/simpleapi` directory of your monorepository, create
+a file `.gally.yml` in this directory.
 
-> Note: Nested projects are not allowed
+> **Note**: Nested projects are not allowed
 
-## Manifest parameters
+For details about the configuration, see:
 
-The `.gally.yml` file contains a number of parameters that can be used to
-customize the steps associated with the project build/test. Top level
-properties are:
+- [Manifest](docs/MANIFEST.md) for details about the `.gally.yml` file
+  properties
+- [Environment variables](docs/VARIABLES.md) for the environment variables
+  available from your scripts
+- [Command Line Interface](docs/COMMAND.md)
 
-- `name` is the project name.
-- `ignore` contains a list of subdirectories and files that can be
-  modified without the project being considered as modified.
+## When are builds triggered?
 
-## Environment Variables
+Opposite to `scripts:` which are triggered if the project contains changes
+the `build:` is triggered, only if the 2 following conditions are met:
+
+- 
 
 ## Command Line
 
