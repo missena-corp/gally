@@ -28,105 +28,32 @@ For details about the configuration, see:
   properties
 - [Environment variables](docs/VARIABLES.md) for the environment variables
   available from your scripts
-- [Command Line Interface](docs/COMMAND.md)
+- [Command Line Interface](docs/COMMAND.md) for details about how to run
+  `gally`
+- Using `gally` with [Continuous Integration](docs/CI.md) tools
 
-## When are builds triggered?
+## How are builds triggered?
 
 Opposite to `scripts:` which are triggered if the project contains changes
-the `build:` is triggered, only if the 2 following conditions are met:
+the `build:` is triggered if the 2 following conditions are met:
 
-- 
+- Changes are detected in the project
+- A tag exists on the commit that matches the <project>@<version> and matches
+  the `version:` command output.
 
-## Command Line
-
-## Triggering Events
-
-Tag <project>@<version> and the build is triggered on that.
-
-## Example of Travis Contiguration
-
-every projects on each change. Each project contains a `.gally.yml` file
-describing the project, and how to interact with it.
-
-
-- 2 strategies checking files update (for now)
-
-## 
-
-- Detects what project have changed in a branch
-
-## Configuration files
-
-They are named `.gally.yml`, and they look like the following example
-
-```yml
-name: example
-ignore:
-  - not/relevant/for/tests/*
-scripts:
-  build: docker build .
-  test: echo hello world
-strategies:
-  compare-to:
-    branch: master
-  previous-commit:
-    only: master
-version: head -1 VERSION
-build: echo go building!
-```
-
-They have to be placed in each managed projects.
-
-## Installing Gally with your CI
-
-### Travis-CI
-
-
-## Strategies
-
-Strategies are the way we check if files in project have been updated
-
-### compare-to
-
-Test the updated projects between current branch and master
-
-### previous-commit
-
-On `master` branch test the updated projects the previous commit
-
-### Builds
-
-In our workflow, final builds are launched with a specific tag. The tag is made
-with the following schema: `project-name` + `@` + `semver version`. ie:
-
-```
-myproject@12.0.5
-```
-
-Builds are handled with the `build:` explaining how to run them.
-
-### Special environment variables
-
-- `GALLY_ROOT` root path for the repository
-- `GALLY_CWD` the 
-- `GALLY_NAME`
-- `GALLY_VERSION`
-
+> **Note**: We encourage you to rely on semver. As a result, we would suggest
+  you tag your version of the `simpleapi` with `simpleapi@1.0.0` when you want
+  to build the version for `1.0.0` assuming you have defined 1.0.0 in your
+  version metadata.
 
 ## TODO
 
-- [x] Run scripts from project file
-- [x] Automatically generate releases
-- [x] Ability to ignore pattern
-- [x] Handle project version
-- [x] List projects
-- [x] Add context dir option
-- [x] Fix verbose flag
-- [x] Handle `git`'s tag
-- [x] Handle builds
+The following changes are planned
+
 - [ ] Remove `git`'s `.Exec` and do it through a library
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Add `gally init` subcommand
 - [ ] Add `-f` option on run to bypass strategies
 - [ ] Add `-f` option on build not based on git tag
 - [ ] Add `-p` option to select project by name
+- [ ] Add `--parallel n` to run commands in parallel

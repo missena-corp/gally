@@ -16,7 +16,11 @@ misunderstanding of the tool.
 - Could we have default values for the .gallu.yml file. For instance:
   - the name could match the directory name by default
   - the default strategies compare-to branch could be `master`
-- WHat happens if you have no intersection with the `main` branch?
+- What happens if you have no intersection with the `main` branch?
+- I would suggest we differentiate build which would be part of the `script:``
+  section from the some kind of `push artefact` stage that would be part of the
+  general section and is currently named `build`. I.e. I don't like the current
+  naming
 
 ## Environment variables
 
