@@ -6,9 +6,12 @@ Gally helps to manage projects that are part of a monorepository. It provides
 simple tools to detect what project have changed, as well as test and build
 them.
 
-> **Installation**: Download a binary from the [release page](https://github.com/missena-corp/gally/releases)
-> **Requirement**: In order for Gally to work, you must have `git` installed
-  and accessible from your path.
+## Installation
+
+Download a binary from the [release page](https://github.com/missena-corp/gally/releases)
+
+**Requirement**: In order for Gally to work, you must have `git` installed
+and accessible from your path.
 
 ## Configuration
 
@@ -17,7 +20,7 @@ that conatins the project. For instance, if you have a project named
 `simpleapi` in the `/apps/simpleapi` directory of your monorepository, create
 a file `.gally.yml` in this directory.
 
-> **Note**: Nested projects are not allowed
+**Note**: Nested projects are not allowed
 
 For details about the configuration, see:
 
@@ -38,10 +41,10 @@ the `build:` is triggered if the 2 following conditions are met:
 - A tag exists on the commit that matches the <project>@<version> and matches
   the `version:` command output.
 
-> **Note**: We encourage you to rely on semver. As a result, we would suggest
-  you tag your version of the `simpleapi` with `simpleapi@1.0.0` when you want
-  to build the version for `1.0.0` assuming you have defined 1.0.0 in your
-  version metadata.
+**Note**: We encourage you to rely on semver. As a result, we would suggest
+you tag your version of the `simpleapi` with `simpleapi@1.0.0` when you want
+to build the version for `1.0.0` assuming you have defined 1.0.0 in your
+version metadata.
 
 ## More
 
