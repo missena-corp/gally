@@ -13,6 +13,8 @@ them.
 > **Requirement**: In order for Gally to work, you must have `git` installed
   and accessible from your path.
 
+Gally is under the MIT license, see the [LICENSE](LICENSE) file for details.
+
 ## Configuration
 
 To define a project with Gally, create a `.gally.yml` file in the directory
