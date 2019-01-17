@@ -1,4 +1,4 @@
-An opinionated tool to manage your projects in a monorepository.
+An opinionated tool to manage projects in a monorepository.
 
 # Gally
 
@@ -46,14 +46,7 @@ the `build:` is triggered if the 2 following conditions are met:
   to build the version for `1.0.0` assuming you have defined 1.0.0 in your
   version metadata.
 
-## TODO
+## More
 
-The following changes are planned
+For more to come, see [TODO](TODO.md)
 
-- [ ] Remove `git`'s `.Exec` and do it through a library
-- [ ] Find a way to avoid running multiple time tests for project sharing the same tests
-- [ ] Add `gally init` subcommand
-- [ ] Add `-f` option on run to bypass strategies
-- [ ] Add `-f` option on build not based on git tag
-- [ ] Add `-p` option to select project by name
-- [ ] Add `--parallel n` to run commands in parallel

@@ -9,7 +9,7 @@ Top level properties are:
   of the `scripts` section because the triggering event 
 - `context:` defines the working directory that should be use when running
   commands.
-- `name:` is the project name.
+- `name:` is the project name; by default matches the directory name
 - `ignore:` contains a list of subdirectories and files that can be
   modified without the project being considered as modified.
 - `scripts:` contains the scripts to run `test` and other lifecyle
