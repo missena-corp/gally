@@ -1,82 +1,54 @@
+An opinionated tool to manage projects in a monorepository.
+
 # Gally
 
 <img align="right" src="https://user-images.githubusercontent.com/747/49454572-b0c3e600-f7e5-11e8-9be3-3feadfff1a52.jpeg" width="38%">
 
-An opinionated tool to help with monoreposity projects.
+Gally helps to manage projects that are part of a monorepository. It provides
+simple tools to detect what project have changed, as well as test and build
+them.
 
-It basicly helps us interfacing with `travis` avoiding to test and rebuild every projects on each change.
-Each project contains a `.gally.yml` describing the project, and how to interact with it.
+> **Installation**: Download a binary from the [release page]
 
-Constraints:
+> **Requirement**: In order for Gally to work, you must have `git` installed
+  and accessible from your path.
 
-- It works with `git` command installed
-- No nested project - at least for now
-- 2 strategies checking files update (for now)
+Gally is under the MIT license, see the [LICENSE](LICENSE) file for details.
 
-## Configuration files
+## Configuration
 
-They are named `.gally.yml`, and they look like the following example
+To define a project with Gally, create a `.gally.yml` file in the directory
+that conatins the project. For instance, if you have a project named
+`simpleapi` in the `/apps/simpleapi` directory of your monorepository, create
+a file `.gally.yml` in this directory.
 
-```yml
-name: example
-ignore:
-  - not/relevant/for/tests/*
-scripts:
-  build: docker build .
-  test: echo hello world
-strategies:
-  compare-to:
-    branch: master
-  previous-commit:
-    only: master
-version: head -1 VERSION
-build: echo go building!
-```
+> **Note**: Nested projects are not allowed
 
-They have to be placed in each managed projects.
+For details about the configuration, see:
 
-## Strategies
+- [Manifest](docs/MANIFEST.md) for details about the `.gally.yml` file
+  properties
+- [Environment variables](docs/VARIABLES.md) for the environment variables
+  available from your scripts
+- [Command Line Interface](docs/COMMAND.md) for details about how to run
+  `gally`
+- Using `gally` with [Continuous Integration](docs/CI.md) tools
 
-Strategies are the way we check if files in project have been updated
+## How are builds triggered?
 
-### compare-to
+Opposite to `scripts:` which are triggered if the project contains changes
+the `build:` is triggered if the 2 following conditions are met:
 
-Test the updated projects between current branch and master
+- Changes are detected in the project
+- A tag exists on the commit that matches the <project>@<version> and matches
+  the `version:` command output.
 
-### previous-commit
+> **Note**: We encourage you to rely on semver. As a result, we would suggest
+  you tag your version of the `simpleapi` with `simpleapi@1.0.0` when you want
+  to build the version for `1.0.0` assuming you have defined 1.0.0 in your
+  version metadata.
 
-On `master` branch test the updated projects the previous commit
+## More
 
-### Builds
+For more to come, see [TODO](TODO.md)
 
-In our workflow, final builds are launched with a specific tag. The tag is made
-with the following schema: `project-name` + `@` + `semver version`. ie:
-
-```
-myproject@12.0.5
-```
-
-Builds are handled with the `build:` explaining how to run them.
-
-### Special environment variables
-
-- `GALLY_NAME`
-- `GALLY_VERSION`
-
-## TODO
-
-- [x] Run scripts from project file
-- [x] Automatically generate releases
-- [x] Ability to ignore pattern
-- [x] Handle project version
-- [x] List projects
-- [x] Add context dir option
-- [x] Fix verbose flag
-- [x] Handle `git`'s tag
-- [x] Handle builds
-- [ ] Remove `git`'s `.Exec` and do it through a library
-- [ ] Find a way to avoid running multiple time tests for project sharing the same tests
-- [ ] Add `gally init` subcommand
-- [ ] Add `-f` option on run to bypass strategies
-- [ ] Add `-f` option on build not based on git tag
-- [ ] Add `-p` option to select project by name
