@@ -55,6 +55,9 @@ func UpdatedFiles(commit string) (files []string, err error) {
 			return nil, err
 		}
 	}
+	if len(out) == 0 && commit != "HEAD^1" {
+		return UpdatedFiles("HEAD^1")
+	}
 	root := Root()
 	for _, f := range strings.Split(string(out), "\n") {
 		if f != "" {
