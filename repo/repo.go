@@ -34,17 +34,6 @@ func Root() string {
 	return strings.TrimSpace(string(out))
 }
 
-func Tags() (res []string) {
-	out, err := exec.Command("git", "tag", "--points-at", "HEAD").Output()
-	if err != nil {
-		return res
-	}
-	for _, tag := range strings.Split(string(out), "\n") {
-		res = append(res, strings.TrimSpace(tag))
-	}
-	return res
-}
-
 func UpdatedFiles(commit string) (files []string, err error) {
 	out, err := exec.Command("git", "diff", "--name-only", commit+"...").Output()
 	if err != nil {
