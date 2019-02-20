@@ -241,8 +241,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		jww.ERROR.Printf("no version available for %v", p)
-		return ""
+		return repo.Version()
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
