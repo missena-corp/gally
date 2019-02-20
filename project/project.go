@@ -21,6 +21,7 @@ var envVars map[string]string
 type Project struct {
 	BaseDir       string `mapstructure:"-"`
 	BuildScript   string `mapstructure:"build"`
+	Bumped        *bool
 	ConfigFile    string
 	Dir           string `mapstructure:"context"`
 	Ignore        []string
@@ -28,6 +29,7 @@ type Project struct {
 	RootDir       string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
+	Updated       *bool
 	VersionScript string `mapstructure:"version"`
 }
 
@@ -85,7 +87,7 @@ func FindAll(rootDir string) Projects {
 	for _, path := range paths {
 		p := New(path, rootDir)
 		if d, _ := projects[p.Name]; d != nil {
-			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.BaseDir)
+			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d.BaseDir, p.BaseDir)
 		}
 		projects[p.Name] = p
 	}
@@ -161,6 +163,10 @@ func New(dir, rootDir string) (p *Project) {
 	return p
 }
 
+func newFalse() *bool { b := false; return &b }
+
+func newTrue() *bool { b := true; return &b }
+
 // Run a command by its name
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
@@ -235,18 +241,44 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		jww.ERROR.Printf("no version available in %q", p.BaseDir)
+		jww.ERROR.Printf("no version available for %v", p)
 		return ""
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
 }
 
+func (p *Project) WasBumped() (bumped bool) {
+	if p.Bumped != nil {
+		return *p.Bumped
+	}
+	p.Bumped = newFalse()
+	if !p.WasUpdated() {
+		return false
+	}
+	currentVersion := p.Version()
+	commit := "master"
+	if repo.IsOnBranch("master") {
+		commit = "HEAD^1"
+	}
+	repo.Checkout(commit, func() { bumped = p.Version() != currentVersion })
+	if bumped {
+		p.Bumped = newTrue()
+	}
+	return bumped
+}
+
 func (p *Project) WasUpdated() bool {
+	// cache response
+	if p.Updated != nil {
+		return *p.Updated
+	}
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
 		if strings.HasPrefix(f, p.BaseDir) && !p.ignored(f) {
+			p.Updated = newTrue()
 			return true
 		}
 	}
+	p.Updated = newFalse()
 	return false
 }

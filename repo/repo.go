@@ -13,6 +13,19 @@ func BranchExists(branchName string) bool {
 	return err == nil
 }
 
+func Checkout(commit string, fn func()) error {
+	if err := exec.Command("git", "checkout", commit).Run(); err != nil {
+		if err := exec.Command("git", "fetch", "origin", commit).Run(); err != nil {
+			return err
+		}
+		if err := exec.Command("git", "checkout", "FETCH_HEAD").Run(); err != nil {
+			return err
+		}
+	}
+	fn()
+	return exec.Command("git", "checkout", "-").Run()
+}
+
 func CurrentCommit() string {
 	out, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	if err != nil {
@@ -37,7 +50,7 @@ func Root() string {
 func UpdatedFiles(commit string) (files []string, err error) {
 	out, err := exec.Command("git", "diff", "--name-only", commit+"...").Output()
 	if err != nil {
-		if _, err = exec.Command("git", "fetch", "origin", commit).Output(); err != nil {
+		if err := exec.Command("git", "fetch", "origin", commit).Run(); err != nil {
 			jww.ERROR.Printf("cannot get remote branch %s: %v\n", commit, err)
 			return nil, err
 		}
