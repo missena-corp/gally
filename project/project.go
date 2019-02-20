@@ -87,7 +87,7 @@ func FindAll(rootDir string) Projects {
 	for _, path := range paths {
 		p := New(path, rootDir)
 		if d, _ := projects[p.Name]; d != nil {
-			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d, p.BaseDir)
+			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d.BaseDir, p.BaseDir)
 		}
 		projects[p.Name] = p
 	}
@@ -241,7 +241,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		jww.ERROR.Printf("no version available in %q", p.BaseDir)
+		jww.ERROR.Printf("no version available for %v", p)
 		return ""
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
