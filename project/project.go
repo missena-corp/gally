@@ -117,6 +117,11 @@ func FindAllUpdated(rootDir string) Projects {
 	return projects
 }
 
+func FindByName(rootDir, name string) *Project {
+	projects := FindAll(rootDir)
+	return projects[name]
+}
+
 func (p *Project) ignored(file string) bool {
 	for _, pattern := range p.Ignore {
 		files, err := filepath.Glob(pattern)

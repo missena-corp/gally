@@ -14,16 +14,26 @@ var runCmd = &cobra.Command{
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		projects := project.FindAllUpdated(rootDir)
+		var projects project.Projects
+		if projectName != "" {
+			p := project.FindByName(rootDir, projectName)
+			if p == nil {
+				jww.ERROR.Fatalf("could not find project %q", projectName)
+			}
+			projects[projectName] = project.FindByName(rootDir, projectName)
+		} else {
+			projects = project.FindAllUpdated(rootDir)
+		}
 		script := args[0]
 		for _, p := range projects {
 			if err := p.Run(script); err != nil {
-				jww.ERROR.Fatalf("could not run properly script %s: %v", script, err)
+				jww.ERROR.Fatalf("could not run properly script %q: %v", script, err)
 			}
 		}
 	},
 }
 
 func init() {
+	addProjectFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
 }

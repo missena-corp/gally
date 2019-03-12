@@ -9,10 +9,15 @@ import (
 )
 
 var (
-	rootDir string
-	tag     string
-	verbose bool
+	projectName string
+	rootDir     string
+	tag         string
+	verbose     bool
 )
+
+func addProjectFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
+}
 
 func addRootDirFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&rootDir, "root", "r", "", "root directory")
