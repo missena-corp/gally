@@ -1,6 +1,6 @@
 package helpers
 
 var (
-	BuildDate = "unkown"
-	Version   = "unkown"
+	BuildDate = "unknown"
+	Version   = "unknown"
 )
