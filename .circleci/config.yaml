@@ -1,7 +1,6 @@
 version: 2.1
 jobs:
   test:
-    working_directory: ~/gally
     docker:
       - image: circleci/golang:1.12
     steps:
@@ -10,6 +9,19 @@ jobs:
           name: Unit Testing
           command: |
             go test -race ./...
+  release:
+    docker:
+      - image: circleci/golang:1.10
+    steps:
+      - checkout
+      - run:
+          name: Unit Testing
+          command: |
+            go test -race ./...
+      - run: 
+          name: Release
+          command: |
+            curl -sL https://git.io/goreleaser | bash -s -- release --skip-validate --debug
 
 workflows:
   version: 2.1
@@ -17,8 +29,10 @@ workflows:
     jobs:
       - test:
           filters:
-            tags:
-              only: /v.*/
             branches:
               only: /.*/
+      - release:
+          filters:
+            tags:
+              only: /v.*/
 
