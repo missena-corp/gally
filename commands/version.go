@@ -28,7 +28,7 @@ func init() {
 
 func gallyVersionString() string {
 	program := "Gally, the monorepo slayer"
-	version := "v" + helpers.Version
+	version := helpers.Version
 	osArch := runtime.GOOS + "/" + runtime.GOARCH
 	return fmt.Sprintf("%s %s %s BuildDate: %s", program, version, osArch, helpers.BuildDate)
 }
