@@ -11,7 +11,7 @@ jobs:
             go test -race ./...
   release:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
     steps:
       - checkout
       - run:
