@@ -3,6 +3,8 @@ jobs:
   test:
     docker:
       - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "ON"
     steps:
       - checkout
       - run:
@@ -12,13 +14,13 @@ jobs:
   release:
     docker:
       - image: circleci/golang:1.10
+        environment:
+          GO111MODULE: "ON"
     steps:
       - checkout
       - run:
           name: Unit Testing
           command: |
-            pwd
-            echo $GOROOT $GO111MODULE $GOPATH
             go test -race ./...
       - run: 
           name: Release
