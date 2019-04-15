@@ -46,6 +46,10 @@ func TestNew(t *testing.T) {
 		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
 		t.FailNow()
 	}
+	if !p.wantTag() {
+		t.Error("`tag` must not be set")
+		t.FailNow()
+	}
 }
 
 func TestRun(t *testing.T) {

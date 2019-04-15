@@ -29,6 +29,7 @@ type Project struct {
 	RootDir       string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
+	Tag           *bool
 	Updated       *bool
 	VersionScript string `mapstructure:"version"`
 }
@@ -55,6 +56,18 @@ func BuildTag(tag string, rootDir string) error {
 		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
 	}
 	return p.runBuild(version)
+}
+
+func BuildNoTag(rootDir string) error {
+	projects := FindAllUpdated(rootDir)
+	for _, p := range projects {
+		if !p.wantTag() {
+			if err := p.runBuild(p.Version()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (p *Project) exec(str string, env Env) ([]byte, error) {
@@ -117,6 +130,10 @@ func (p *Project) ignored(file string) bool {
 		}
 	}
 	return false
+}
+
+func (p *Project) wantTag() bool {
+	return p.Tag == nil || *(p.Tag)
 }
 
 // New reads current config in directory

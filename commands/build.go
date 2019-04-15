@@ -12,7 +12,10 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if tag == "" {
-			jww.INFO.Printf("no tag provided")
+			jww.INFO.Printf("building no tag projects")
+			if err := project.BuildNoTag(rootDir); err != nil {
+				jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
+			}
 			return
 		}
 		if err := project.BuildTag(tag, rootDir); err != nil {
