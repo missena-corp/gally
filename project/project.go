@@ -263,7 +263,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		return repo.Version(p.Dir)
+		return repo.Version(p.Dir, p.Ignore)
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
