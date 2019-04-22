@@ -29,7 +29,7 @@ type Project struct {
 	RootDir       string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
-	Tag           *bool
+	Tag           *bool `mapstructure:"tag"`
 	Updated       *bool
 	VersionScript string `mapstructure:"version"`
 }
