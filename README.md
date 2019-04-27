@@ -34,17 +34,17 @@ For more details about the configuration and how to use `gally`, see:
 ## How are builds triggered?
 
 Opposite to `scripts:` properties which are triggered if the project
-contains changes the `build:` is triggered if the 2 following conditions
-are met:
+contains changes or if you use the `-f|--force` flag, the `build:` section
+can be triggered in different ways:
 
-- Changes are detected in the project directories
-- A tag exists on the commit that matches the <project>@<version> and matches
-  the `version:` command output.
-
-**Note**: We encourage you to rely on semver. As a result, we would suggest
-you tag your version of the `simpleapi` with `simpleapi@1.0.0` when you want
-to build the version for `1.0.0` assuming you have defined 1.0.0 in your
-version metadata.
+- If you've set the `tag:` property to `false` which is now the advised way
+  to deal with builds, the build are triggered if a file changes in the
+  project directory
+- If you've set the `tag:` property to `true`, then build are triggered if
+  the 2 following conditions are met:
+  - Changes are detected in the project directory
+  - A tag exists on the commit that matches the `<project>@<version>` and
+    the `<version>` part of it matches the `version:` command output.
 
 ## More...
 
@@ -56,4 +56,3 @@ create a pull request.
 
 Gally is available under the MIT license, see the [LICENSE](LICENSE) file for
 details.
-
