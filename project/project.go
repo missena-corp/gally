@@ -267,7 +267,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	for _, p := range projs {
 		out = append(out, map[string]interface{}{
 			"directory":   p.BaseDir,
-			"environment": NewEnv(p),
+			"environment": NewCleanEnv(p),
 			"name":        p.Name,
 			"update":      p.WasUpdated(),
 			"version":     p.Version(),
