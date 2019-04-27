@@ -41,7 +41,7 @@ type Strategy struct {
 	Only   string
 }
 
-func BuildTag(tag string, rootDir string) error {
+func BuildTag(name *string, tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
 	if len(sp) != 2 {
 		return fmt.Errorf("%q is not a valid tag", tag)
@@ -49,7 +49,9 @@ func BuildTag(tag string, rootDir string) error {
 	p := Find(sp[0], rootDir)
 	if p == nil {
 		return fmt.Errorf("project %q not found", sp[0])
-	}
+	} else if p != nil && name != nil && p.Name != *name {
+        return fmt.Errorf("project %s and tag %q do not match", *name, sp[0])
+    }
 	version := p.Version()
 	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
@@ -58,8 +60,17 @@ func BuildTag(tag string, rootDir string) error {
 	return p.runBuild(version)
 }
 
-func BuildNoTag(rootDir string) error {
-	projects := FindAllUpdated(rootDir)
+func BuildNoTag(name *string, rootDir string) error {
+    projects := Projects{}
+    if name == nil {
+	    projects = FindAllUpdated(rootDir)
+    } else {
+        p := Find(*name, rootDir)
+        if p == nil {
+            return fmt.Errorf("project %q not found", *name)
+        }
+        projects[*name] = p
+    }
 	for _, p := range projects {
 		if !p.wantTag() {
 			if err := p.runBuild(p.Version()); err != nil {

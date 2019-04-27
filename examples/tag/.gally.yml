@@ -1,0 +1,15 @@
+name: tag
+context: ..
+ignore:
+  - not/relevant/for/tests/*
+scripts:
+  build: docker build .
+  test: echo hello world
+strategies:
+  compare-to:
+    branch: master
+  previous-commit:
+    only: master
+version: head -1 tag/VERSION
+build: echo go building!
+tag: false

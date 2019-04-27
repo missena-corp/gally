@@ -34,6 +34,5 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	addProjectFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
 }
