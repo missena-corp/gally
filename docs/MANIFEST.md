@@ -17,6 +17,9 @@ Top level properties are:
 - `strategies:` defines how changes are checks, including, what branch
   should be considered as the main branch and when to compare with the
   previous commit compared to when compare with the base branch.
+- `tag:` defines if builds rely on explicit `git tag` (true) or are
+  automatically created when files change in the project (false). 
+  Prefer the later!
 - `version:` defines the command to figure out the project version
 
 # Lifecycle (`scripts:`) properties
@@ -71,6 +74,7 @@ strategies:
     branch: master
   previous-commit:
     only: master
-version: head -1 VERSION
+version: git log -1 --format='%h' -- .
 build: docker build .
+tag: false
 ```
