@@ -12,6 +12,4 @@ builds:
 archive:
   name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
   format: tar.gz
-  replacements:
-    amd64: 64-bit
-    darwin: macOS
+
