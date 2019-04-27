@@ -1,5 +1,5 @@
 name: tag
-context: ..
+workdir: ..
 ignore:
   - not/relevant/for/tests/*
 scripts:

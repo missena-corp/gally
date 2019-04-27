@@ -23,7 +23,8 @@ type Project struct {
 	BuildScript   string `mapstructure:"build"`
 	Bumped        *bool
 	ConfigFile    string
-	Dir           string `mapstructure:"context"`
+	Dir           string `mapstructure:"workdir"`
+	ContextDir    string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
 	RootDir       string
@@ -201,6 +202,14 @@ func New(dir, rootDir string) (p *Project) {
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
+	if p.Name == "" {
+		p.Name = filepath.Base(dir)
+	}
+	if p.ContextDir != "" && p.Dir == "" {
+		fmt.Fprintf(os.Stderr, "**Deprecated** Project %s, replace `context:` with `workdir: in .gally.yml`\n", p.Name)
+		p.Dir = p.ContextDir
+		p.ContextDir = ""
+	}
 	p.BaseDir = dir
 	if p.Dir == "" {
 		p.Dir = dir
@@ -209,11 +218,8 @@ func New(dir, rootDir string) (p *Project) {
 			p.Dir = path.Join(dir, p.Dir)
 		}
 		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-			log.Fatalf("context directory %q does not exist", p.Dir)
+			log.Fatalf("workdir directory %q does not exist", p.Dir)
 		}
-	}
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
 	}
 	p.RootDir = rootDir
 	if !path.IsAbs(rootDir) {

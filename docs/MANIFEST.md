@@ -7,7 +7,7 @@ Top level properties are:
 
 - `build:` defines the command to build the project. This is not part
   of the `scripts` section because the triggering event 
-- `context:` defines the working directory that should be use when running
+- `workdir:` defines the working directory that should be use when running
   commands.
 - `name:` is the project name; by default matches the directory name
 - `ignore:` contains a list of subdirectories and files that can be
@@ -64,7 +64,7 @@ Below is the example of a manifest file:
 
 ```yaml
 name: simpleapi
-context: .
+workdir: .
 ignore:
   - not/relevant/for/tests/*
 scripts:
