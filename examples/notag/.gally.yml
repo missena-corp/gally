@@ -1,4 +1,4 @@
-name: example
+name: notag
 context: ..
 ignore:
   - not/relevant/for/tests/*
@@ -10,4 +10,6 @@ strategies:
     branch: master
   previous-commit:
     only: master
-build: echo go building!
+build: echo go building notag!
+version: git log -1 --format='%h' ./notag
+tag: false

@@ -11,5 +11,4 @@ strategies:
   previous-commit:
     only: master
 version: head -1 tag/VERSION
-build: echo go building!
-tag: false
+build: echo go building tag!

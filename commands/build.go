@@ -20,6 +20,12 @@ var buildCmd = &cobra.Command{
 			if err := project.BuildNoTag(p, rootDir); err != nil {
 				jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
 			}
+			if force {
+				jww.INFO.Printf("building projects with tag in force mode")
+					if err := project.BuildForceWithTag(p, rootDir); err != nil {
+						jww.ERROR.Fatalf("could not build tag projects: %v", err)
+					}
+				}
 			return
 		}
 		if err := project.BuildTag(p, tag, rootDir); err != nil {
@@ -30,5 +36,7 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	addTagFlag(buildCmd)
+	addProjectFlag(buildCmd)
+	addForceFlag(buildCmd)
 	rootCmd.AddCommand(buildCmd)
 }

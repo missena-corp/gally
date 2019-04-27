@@ -32,5 +32,6 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	addProjectFlag(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

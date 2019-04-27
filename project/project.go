@@ -60,6 +60,36 @@ func BuildTag(name *string, tag string, rootDir string) error {
 	return p.runBuild(version)
 }
 
+func BuildForceWithTag(name *string, rootDir string) error {
+    projects := Projects{}
+    if name == nil {
+		allProjects := FindAllUpdated(rootDir)
+		for _, v := range allProjects {
+			if v.wantTag() {
+				projects[v.Name] = v
+			}
+		}
+    } else {
+        p := Find(*name, rootDir)
+        if p == nil {
+            return fmt.Errorf("project %q not found", *name)
+		}
+		if p.wantTag() {
+			projects[*name] = p
+		}
+	}
+	for _, p := range projects {
+		version := p.Version()
+		if version == "" {
+			return fmt.Errorf("could not find version for %s", p.Name)
+		}
+		if err := p.runBuild(p.Version()); err != nil {
+			return err
+		}
+    }
+	return nil
+}
+
 func BuildNoTag(name *string, rootDir string) error {
     projects := Projects{}
     if name == nil {
