@@ -4,7 +4,7 @@ ignore:
   - not/relevant/for/tests/*
 scripts:
   build: docker build .
-  test: echo hello world
+  test: echo hello notag
 strategies:
   compare-to:
     branch: master

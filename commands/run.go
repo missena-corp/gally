@@ -7,14 +7,14 @@ import (
 )
 
 var runCmd = &cobra.Command{
-	Use:   "run",
+	Use:   "run [script]",
 	Short: "run your script on projects having updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		var projects project.Projects
+		projects := project.Projects{}
 		if projectName != "" {
 			p := project.FindByName(rootDir, projectName)
 			if p == nil {
@@ -22,7 +22,11 @@ var runCmd = &cobra.Command{
 			}
 			projects[projectName] = project.FindByName(rootDir, projectName)
 		} else {
-			projects = project.FindAllUpdated(rootDir)
+			if !force {
+				projects = project.FindAllUpdated(rootDir)
+			} else {
+                projects = project.FindAll(rootDir)
+			}	
 		}
 		script := args[0]
 		for _, p := range projects {
@@ -35,5 +39,6 @@ var runCmd = &cobra.Command{
 
 func init() {
 	addProjectFlag(runCmd)
+	addForceFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
 }
