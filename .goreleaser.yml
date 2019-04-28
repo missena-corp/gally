@@ -12,4 +12,5 @@ builds:
 archive:
   name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
   format: tar.gz
-
+  replacements:
+    amd64: x86_64
