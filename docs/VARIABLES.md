@@ -7,7 +7,6 @@ in the `.gally.yml` file:
   property if it exists
 - `GALLY_PROJECT_VERSION` defines the output from the `version:` command
 - `GALLY_PROJECT_ROOT` defines the location of the project. This variable is
-  unused by gally
 - `GALLY_ROOT` defines the root directory from gally, i.e. usually the repository
   top level directory
 - `GALLY_TAG` if the commit is tagged with the project, defines the version of
