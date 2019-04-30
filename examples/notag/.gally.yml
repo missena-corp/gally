@@ -1,14 +1,15 @@
-name: example
+name: notag
 context: ..
 ignore:
   - not/relevant/for/tests/*
 scripts:
   build: docker build .
-  test: echo hello world
+  test: echo hello notag
 strategies:
   compare-to:
     branch: master
   previous-commit:
     only: master
-version: head -1 _examples/VERSION
-build: echo go building!
+build: echo go building notag!
+version: git log -1 --format='%h' ./notag
+tag: false

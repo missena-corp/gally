@@ -5,11 +5,11 @@ improve `gally`:
 
 - [ ] Find a way to avoid running multiple time tests for project sharing the same tests
 - [ ] Add a `gally init` subcommand
-- [ ] Add `-f` option on run to bypass strategies
-- [ ] Add `-f` option on build not based on git tag
-- [ ] Add `-p` option to select project by name
+- [x] Add `-f` option on run to bypass strategies
+- [x] Add `-f` option on build not based on git tag
+- [x] Add `-p` option to select project by name
 - [ ] Add `--parallel n` to run commands in parallel
-- [ ] When you type `gally` without any options, it should display the help
+- [x] When you type `gally` without any options, it should display the help
 - [ ] Change the `scripts:` content, see "Change in the script section" below
 - [ ] Rename variables like below. See "Change the variable name"
 - [ ] Change the `context:` property with `workdir:`

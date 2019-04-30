@@ -32,7 +32,7 @@ func TestFindProjectPaths(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	expected := []string{"../_examples"}
+	expected := []string{"../examples/notag", "../examples/tag"}
 	if !cmp.Equal(paths, expected) {
 		t.Errorf("paths %v must be equal to %v", paths, expected)
 		t.FailNow()
@@ -41,7 +41,7 @@ func TestFindProjectPaths(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	t.Parallel()
-	p := New("../_examples", "..")
+	p := New("../examples/tag", "..")
 	if !strings.HasPrefix(p.BaseDir, p.Dir) {
 		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
 		t.FailNow()
@@ -99,7 +99,7 @@ func TestRunBuild(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	t.Parallel()
-	c := Project{BaseDir: ".", Dir: "../_examples", VersionScript: "head -1 VERSION"}
+	c := Project{BaseDir: ".", Dir: "../examples/tag", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.Version() != expected {
 		t.Errorf("version must be equal to %q but is actually %q", expected, c.Version())

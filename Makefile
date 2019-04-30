@@ -1,3 +1,7 @@
+.PHONY: build
+build:
+	@go build -o dist/gally .
+
 .PHONY: release
 release:
 	@curl -sL https://git.io/goreleaser | bash -s -- release --skip-validate --debug

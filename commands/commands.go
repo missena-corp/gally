@@ -13,6 +13,7 @@ var (
 	rootDir     string
 	tag         string
 	verbose     bool
+	force       bool
 )
 
 func addProjectFlag(cmd *cobra.Command) {
@@ -29,6 +30,10 @@ func addTagFlag(cmd *cobra.Command) {
 
 func addVerboseFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
+}
+
+func addForceFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "force the command")
 }
 
 func handleVerboseFlag() {
