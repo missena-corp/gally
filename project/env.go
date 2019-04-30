@@ -11,17 +11,38 @@ func (e Env) Add(m map[string]string) Env {
 	return e
 }
 
+func NewCleanEnv(p *Project) Env {
+	return Env{
+		"GALLY_PROJECT_WORKDIR": p.Dir,
+		"GALLY_PROJECT_VERSION": p.Version(),
+		"GALLY_PROJECT_NAME":    p.Name,
+		"GALLY_PROJECT_ROOT":    p.BaseDir,
+		"GALLY_ROOT":            p.RootDir,
+	}
+}
+
 func NewEnv(p *Project) Env {
 	return Env{
-		"GALLY_CWD":     p.Dir,
-		"GALLY_NAME":    p.Name,
-		"GALLY_ROOT":    p.RootDir,
-		"GALLY_VERSION": p.Version(),
+		"GALLY_CWD":             p.Dir,
+		"GALLY_NAME":            p.Name,
+		"GALLY_PROJECT_WORKDIR": p.Dir,
+		"GALLY_PROJECT_VERSION": p.Version(),
+		"GALLY_PROJECT_NAME":    p.Name,
+		"GALLY_PROJECT_ROOT":    p.BaseDir,
+		"GALLY_ROOT":            p.RootDir,
+		"GALLY_VERSION":         p.Version(),
 	}
 }
 
 func NewEnvNoVersion(p *Project) Env {
-	return Env{"GALLY_CWD": p.Dir, "GALLY_ROOT": p.RootDir}
+	return Env{
+		"GALLY_CWD":             p.Dir,
+		"GALLY_NAME":            p.Name,
+		"GALLY_PROJECT_WORKDIR": p.Dir,
+		"GALLY_PROJECT_NAME":    p.Name,
+		"GALLY_PROJECT_ROOT":    p.BaseDir,
+		"GALLY_ROOT":            p.RootDir,
+	}
 }
 
 func (e Env) ToSlice() []string {
