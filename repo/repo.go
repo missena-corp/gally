@@ -75,7 +75,7 @@ func UpdatedFiles(commit string) (files []string, err error) {
 }
 
 func Version(path string, excluded []string) string {
-	args := []string{"log", "-1", "--format='%h'", "--", path}
+	args := []string{"log", "-1", "--format=%h", "--", path}
 	for _, ex := range excluded {
 		args = append(args, fmt.Sprintf(":(exclude)%s/%s", path, ex))
 	}
