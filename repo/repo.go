@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"fmt"
 	"os/exec"
 	"path"
 	"strings"
@@ -73,9 +74,12 @@ func UpdatedFiles(commit string) (files []string, err error) {
 	return files, nil
 }
 
-func Version() string {
-	cmd := exec.Command("git", "show", "--quiet", "--date='format-local:%Y%m%d%H%M%S'", "--format='%cd.%h'")
-	cmd.Env = []string{"TZ=UTC"}
+func Version(path string, excluded []string) string {
+	args := []string{"log", "-1", "--format=%h", "--", path}
+	for _, ex := range excluded {
+		args = append(args, fmt.Sprintf(":(exclude)%s/%s", path, ex))
+	}
+	cmd := exec.Command("git", args...)
 	if out, err := cmd.Output(); err == nil {
 		return strings.TrimSpace(string(out))
 	}
