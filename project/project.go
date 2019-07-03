@@ -24,6 +24,7 @@ type Project struct {
 	Bumped        *bool
 	ConfigFile    string
 	Dir           string `mapstructure:"workdir"`
+	Disable       bool
 	ContextDir    string `mapstructure:"context"`
 	Ignore        []string
 	Name          string
@@ -51,8 +52,8 @@ func BuildTag(name *string, tag string, rootDir string) error {
 	if p == nil {
 		return fmt.Errorf("project %q not found", sp[0])
 	} else if p != nil && name != nil && p.Name != *name {
-        return fmt.Errorf("project %s and tag %q do not match", *name, sp[0])
-    }
+		return fmt.Errorf("project %s and tag %q do not match", *name, sp[0])
+	}
 	version := p.Version()
 	// this allow to have project without `version` defined
 	if version != "" && version != sp[1] {
@@ -62,18 +63,18 @@ func BuildTag(name *string, tag string, rootDir string) error {
 }
 
 func BuildForceWithTag(name *string, rootDir string) error {
-    projects := Projects{}
-    if name == nil {
+	projects := Projects{}
+	if name == nil {
 		allProjects := FindAllUpdated(rootDir)
 		for _, v := range allProjects {
 			if v.wantTag() {
 				projects[v.Name] = v
 			}
 		}
-    } else {
-        p := Find(*name, rootDir)
-        if p == nil {
-            return fmt.Errorf("project %q not found", *name)
+	} else {
+		p := Find(*name, rootDir)
+		if p == nil {
+			return fmt.Errorf("project %q not found", *name)
 		}
 		if p.wantTag() {
 			projects[*name] = p
@@ -87,21 +88,21 @@ func BuildForceWithTag(name *string, rootDir string) error {
 		if err := p.runBuild(p.Version()); err != nil {
 			return err
 		}
-    }
+	}
 	return nil
 }
 
 func BuildNoTag(name *string, rootDir string) error {
-    projects := Projects{}
-    if name == nil {
-	    projects = FindAllUpdated(rootDir)
-    } else {
-        p := Find(*name, rootDir)
-        if p == nil {
-            return fmt.Errorf("project %q not found", *name)
-        }
-        projects[*name] = p
-    }
+	projects := Projects{}
+	if name == nil {
+		projects = FindAllUpdated(rootDir)
+	} else {
+		p := Find(*name, rootDir)
+		if p == nil {
+			return fmt.Errorf("project %q not found", *name)
+		}
+		projects[*name] = p
+	}
 	for _, p := range projects {
 		if !p.wantTag() {
 			if err := p.runBuild(p.Version()); err != nil {
@@ -141,7 +142,7 @@ func FindAll(rootDir string) Projects {
 	paths, _ := findPaths(rootDir)
 	for _, path := range paths {
 		p := New(path, rootDir)
-		if d, _ := projects[p.Name]; d != nil {
+		if _, exists := projects[p.Name]; exists {
 			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d.BaseDir, p.BaseDir)
 		}
 		projects[p.Name] = p
@@ -247,6 +248,10 @@ func (p *Project) Run(s string) error {
 
 // run a command script for a project
 func (p *Project) run(script string, env Env) error {
+	if p.Disable {
+		jww.WARN.Printf("project %q disabled", p.BaseDir)
+		return nil
+	}
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir
 	cmd.Env = append(os.Environ(), env.ToSlice()...)
