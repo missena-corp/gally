@@ -93,7 +93,7 @@ func BuildForceWithTag(name *string, rootDir string) error {
 }
 
 func BuildNoTag(name *string, rootDir string) error {
-	projects := Projects{}
+	var projects Projects
 	if name == nil {
 		projects = FindAllUpdated(rootDir)
 	} else {
