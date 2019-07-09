@@ -142,7 +142,7 @@ func FindAll(rootDir string) Projects {
 	paths, _ := findPaths(rootDir)
 	for _, path := range paths {
 		p := New(path, rootDir)
-		if _, exists := projects[p.Name]; exists {
+		if d, exists := projects[p.Name]; exists {
 			jww.FATAL.Fatalf("2 projects with name %q exist:\n- %q\n- %q\n", p.Name, d.BaseDir, p.BaseDir)
 		}
 		projects[p.Name] = p
