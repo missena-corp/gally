@@ -347,7 +347,7 @@ func (p *Project) WasUpdated() bool {
 		return *p.Updated
 	}
 	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
-		if strings.HasPrefix(f, fmt.Sprintf("%s%s", p.BaseDir, string(os.PathSeparator))) && !p.ignored(f) {
+		if strings.HasPrefix(f, fmt.Sprintf("%s%c", p.BaseDir, os.PathSeparator)) && !p.ignored(f) {
 			p.Updated = newTrue()
 			return true
 		}
