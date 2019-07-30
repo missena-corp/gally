@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"os"
 	"fmt"
 	"os/exec"
 	"path"
