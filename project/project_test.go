@@ -25,6 +25,23 @@ func captureOutput(f func()) []byte {
 	return out
 }
 
+func TestDependsOn(t *testing.T) {
+	t.Parallel()
+	p := New("../examples/tag", "..")
+	if p.DependsOn[0] != "/app/project1" {
+		t.Errorf(".gally.yml should contain a depends_on tag with /app/project1")
+		t.FailNow()		
+	}
+}
+func TestEnv(t *testing.T) {
+	t.Parallel()
+	p := New("../examples/tag", "..")
+	if p.Env[0].Name != "NAMESPACE" || p.Env[0].Value != "staging" {
+		t.Errorf(".gally.yml should contain NAMESPACE=staging")
+		t.FailNow()
+	}
+}
+
 func TestFindProjectPaths(t *testing.T) {
 	t.Parallel()
 	paths, err := findPaths("..")

@@ -1,5 +1,8 @@
 name: notag
-context: ..
+workdir: ..
+depends_on:
+  - /repo
+  - /project
 ignore:
   - not/relevant/for/tests/*
 scripts:
@@ -13,3 +16,6 @@ strategies:
 build: echo go building notag!
 version: git log -1 --format='%h' ./notag
 tag: false
+env:
+  - name: NAMESPACE
+    value: "demo"

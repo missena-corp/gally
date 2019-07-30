@@ -19,13 +19,18 @@ const configFileName = ".gally.yml"
 var envVars map[string]string
 
 type Project struct {
-	BaseDir       string `mapstructure:"-"`
-	BuildScript   string `mapstructure:"build"`
-	Bumped        *bool
-	ConfigFile    string
-	Dir           string `mapstructure:"workdir"`
-	Disable       bool
-	ContextDir    string `mapstructure:"context"`
+	BaseDir     string `mapstructure:"-"`
+	BuildScript string `mapstructure:"build"`
+	Bumped      *bool
+	ConfigFile  string
+	ContextDir  string `mapstructure:"context"`
+	DependsOn   []string `mapstructure:"depends_on"`
+	Dir         string `mapstructure:"workdir"`
+	Disable     bool
+	Env         []struct {
+		Name  string
+		Value string
+	}
 	Ignore        []string
 	Name          string
 	RootDir       string
@@ -315,7 +320,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		return repo.Version(p.Dir, p.Ignore)
+		return repo.Version(p.Dir, p.DependsOn, p.Ignore)
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))

@@ -12,3 +12,8 @@ strategies:
     only: master
 version: head -1 tag/VERSION
 build: echo go building tag!
+depends_on:
+  - /app/project1
+env:
+  - name: NAMESPACE
+    value: "staging"

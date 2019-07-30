@@ -11,38 +11,47 @@ func (e Env) Add(m map[string]string) Env {
 	return e
 }
 
-func NewCleanEnv(p *Project) Env {
-	return Env{
-		"GALLY_PROJECT_WORKDIR": p.Dir,
-		"GALLY_PROJECT_VERSION": p.Version(),
-		"GALLY_PROJECT_NAME":    p.Name,
-		"GALLY_PROJECT_ROOT":    p.BaseDir,
-		"GALLY_ROOT":            p.RootDir,
+func NewCleanEnv(p *Project) (env Env) {
+	env = Env{}
+	for _, v := range p.Env {
+		env[v.Name] = v.Value
 	}
+	env["GALLY_PROJECT_WORKDIR"] = p.Dir
+	env["GALLY_PROJECT_VERSION"] = p.Version()
+	env["GALLY_PROJECT_NAME"] = p.Name
+	env["GALLY_PROJECT_ROOT"] = p.BaseDir
+	env["GALLY_ROOT"] = p.RootDir
+	return
 }
 
-func NewEnv(p *Project) Env {
-	return Env{
-		"GALLY_CWD":             p.Dir,
-		"GALLY_NAME":            p.Name,
-		"GALLY_PROJECT_WORKDIR": p.Dir,
-		"GALLY_PROJECT_VERSION": p.Version(),
-		"GALLY_PROJECT_NAME":    p.Name,
-		"GALLY_PROJECT_ROOT":    p.BaseDir,
-		"GALLY_ROOT":            p.RootDir,
-		"GALLY_VERSION":         p.Version(),
+func NewEnv(p *Project) (env Env) {
+	env = Env{}
+	for _, v := range p.Env {
+		env[v.Name] = v.Value
 	}
+	env["GALLY_CWD"] = p.Dir
+	env["GALLY_NAME"] = p.Name
+	env["GALLY_PROJECT_WORKDIR"] = p.Dir
+	env["GALLY_PROJECT_VERSION"] = p.Version()
+	env["GALLY_PROJECT_NAME"] = p.Name
+	env["GALLY_PROJECT_ROOT"] = p.BaseDir
+	env["GALLY_ROOT"] = p.RootDir
+	env["GALLY_VERSION"] = p.Version()
+	return
 }
 
-func NewEnvNoVersion(p *Project) Env {
-	return Env{
-		"GALLY_CWD":             p.Dir,
-		"GALLY_NAME":            p.Name,
-		"GALLY_PROJECT_WORKDIR": p.Dir,
-		"GALLY_PROJECT_NAME":    p.Name,
-		"GALLY_PROJECT_ROOT":    p.BaseDir,
-		"GALLY_ROOT":            p.RootDir,
+func NewEnvNoVersion(p *Project) (env Env) {
+	env = Env{}
+	for _, v := range p.Env {
+		env[v.Name] = v.Value
 	}
+	env["GALLY_CWD"] = p.Dir
+	env["GALLY_NAME"] = p.Name
+	env["GALLY_PROJECT_WORKDIR"] = p.Dir
+	env["GALLY_PROJECT_NAME"] = p.Name
+	env["GALLY_PROJECT_ROOT"] = p.BaseDir
+	env["GALLY_ROOT"] = p.RootDir
+	return
 }
 
 func (e Env) ToSlice() []string {
