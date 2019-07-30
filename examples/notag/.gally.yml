@@ -14,7 +14,6 @@ strategies:
   previous-commit:
     only: master
 build: echo go building notag!
-version: git log -1 --format='%h' ./notag
 tag: false
 env:
   - name: NAMESPACE
