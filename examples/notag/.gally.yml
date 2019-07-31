@@ -1,5 +1,5 @@
 name: notag
-context: ..
+workdir: ..
 ignore:
   - not/relevant/for/tests/*
 scripts:
@@ -11,5 +11,9 @@ strategies:
   previous-commit:
     only: master
 build: echo go building notag!
-version: git log -1 --format='%h' ./notag
 tag: false
+depends_on:
+  - ../../repo
+env:
+  - name: NAMESPACE
+    value: "demo"

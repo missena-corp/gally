@@ -19,13 +19,18 @@ const configFileName = ".gally.yml"
 var envVars map[string]string
 
 type Project struct {
-	BaseDir       string `mapstructure:"-"`
-	BuildScript   string `mapstructure:"build"`
-	Bumped        *bool
-	ConfigFile    string
-	Dir           string `mapstructure:"workdir"`
-	Disable       bool
-	ContextDir    string `mapstructure:"context"`
+	BaseDir     string `mapstructure:"-"`
+	BuildScript string `mapstructure:"build"`
+	Bumped      *bool
+	ConfigFile  string
+	ContextDir  string   `mapstructure:"context"`
+	DependsOn   []string `mapstructure:"depends_on"`
+	Dir         string   `mapstructure:"workdir"`
+	Disable     bool
+	Env         []struct {
+		Name  string
+		Value string
+	}
 	Ignore        []string
 	Name          string
 	RootDir       string
@@ -230,6 +235,13 @@ func New(dir, rootDir string) (p *Project) {
 		}
 		p.RootDir = d
 	}
+
+	for k, v := range p.DependsOn {
+		p.DependsOn[k] = path.Join(p.BaseDir, v)
+		if _, err := os.Stat(p.DependsOn[k]); os.IsNotExist(err) {
+			log.Fatalf("depends_on directory %q does not exist", p.DependsOn[k])
+		}
+	}
 	return p
 }
 
@@ -277,11 +289,12 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
 		out = append(out, map[string]interface{}{
-			"directory":   p.BaseDir,
-			"environment": NewCleanEnv(p),
-			"name":        p.Name,
-			"update":      p.WasUpdated(),
-			"version":     p.Version(),
+			"directory":    p.BaseDir,
+			"dependencies":  p.DependsOn,
+			"environment":  NewCleanEnv(p),
+			"name":         p.Name,
+			"update":       p.WasUpdated(),
+			"version":      p.Version(),
 		})
 	}
 	return out
@@ -315,7 +328,7 @@ func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
 
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		return repo.Version(p.Dir, p.Ignore)
+		return repo.Version(p.Dir, p.DependsOn, p.Ignore)
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
@@ -350,6 +363,12 @@ func (p *Project) WasUpdated() bool {
 		if strings.HasPrefix(f, fmt.Sprintf("%s%c", p.BaseDir, os.PathSeparator)) && !p.ignored(f) {
 			p.Updated = newTrue()
 			return true
+		}
+		for _, v := range p.DependsOn {
+			if strings.HasPrefix(f, fmt.Sprintf("%s%c", v, os.PathSeparator)) && !p.ignored(f) {
+				p.Updated = newTrue()
+				return true
+			}
 		}
 	}
 	p.Updated = newFalse()

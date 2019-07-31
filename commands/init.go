@@ -25,7 +25,10 @@ var initCmd = &cobra.Command{
 			"    only: master\n" +
 			fmt.Sprintf("build: echo \"building %s 💖!\"\n", name) +
 			"version: git log -1 --format='%%h' .\n" +
-			"tag: false\n"
+			"tag: false\n" +
+			"env:\n" +
+			"  - name: NAMESPACE\n" +
+			"    value: staging\n"
 		if _, err := os.Stat(path + string(filepath.Separator) + ".gally.yml"); os.IsNotExist(err) {
 			err := ioutil.WriteFile(path+string(filepath.Separator)+".gally.yml", []byte(out), 0644)
 			if err != nil {

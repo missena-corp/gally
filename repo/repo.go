@@ -74,8 +74,11 @@ func UpdatedFiles(commit string) (files []string, err error) {
 	return files, nil
 }
 
-func Version(path string, excluded []string) string {
+func Version(path string, dependencies []string, excluded []string) string {
 	args := []string{"log", "-1", "--format=%h", "--", path}
+	for _, dep := range dependencies {
+		args = append(args, dep)
+	}
 	for _, ex := range excluded {
 		args = append(args, fmt.Sprintf(":(exclude)%s/%s", path, ex))
 	}
@@ -83,5 +86,5 @@ func Version(path string, excluded []string) string {
 	if out, err := cmd.Output(); err == nil {
 		return strings.TrimSpace(string(out))
 	}
-	return ""
+	return "unknown"
 }
