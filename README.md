@@ -48,9 +48,7 @@ can be triggered in different ways:
 
 ## More...
 
-If you are interesting in what we are considering for what is coming next,
-see [TODO](TODO.md). Do not hesitate to contribute by opening an issue or
-create a pull request.
+Do not hesitate to contribute by opening an issue or create a pull request.
 
 ## License
 

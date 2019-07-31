@@ -23,9 +23,9 @@ type Project struct {
 	BuildScript string `mapstructure:"build"`
 	Bumped      *bool
 	ConfigFile  string
-	ContextDir  string `mapstructure:"context"`
+	ContextDir  string   `mapstructure:"context"`
 	DependsOn   []string `mapstructure:"depends_on"`
-	Dir         string `mapstructure:"workdir"`
+	Dir         string   `mapstructure:"workdir"`
 	Disable     bool
 	Env         []struct {
 		Name  string
@@ -235,6 +235,19 @@ func New(dir, rootDir string) (p *Project) {
 		}
 		p.RootDir = d
 	}
+
+	for k, v := range p.DependsOn {
+		p.DependsOn[k] = path.Join(p.BaseDir, v)
+		if _, err := os.Stat(p.DependsOn[k]); os.IsNotExist(err) {
+			log.Fatalf("depends_on directory %q does not exist", p.DependsOn[k])
+		}
+		p.DependsOn[k] = strings.Replace(
+			p.DependsOn[k],
+			fmt.Sprintf("%s%c", p.RootDir, os.PathSeparator),
+			"",
+			-1,
+		)
+	}
 	return p
 }
 
@@ -281,12 +294,17 @@ func (p *Project) runBuild(version string) error {
 func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
+		deps := []string{}
+		for _, v := range p.DependsOn {
+			deps = append(deps, path.Join(p.RootDir, v))
+		}
 		out = append(out, map[string]interface{}{
-			"directory":   p.BaseDir,
-			"environment": NewCleanEnv(p),
-			"name":        p.Name,
-			"update":      p.WasUpdated(),
-			"version":     p.Version(),
+			"directory":    p.BaseDir,
+			"dependencies": deps,
+			"environment":  NewCleanEnv(p),
+			"name":         p.Name,
+			"update":       p.WasUpdated(),
+			"version":      p.Version(),
 		})
 	}
 	return out

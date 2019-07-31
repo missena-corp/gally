@@ -28,9 +28,15 @@ func captureOutput(f func()) []byte {
 func TestDependsOn(t *testing.T) {
 	t.Parallel()
 	p := New("../examples/tag", "..")
-	if p.DependsOn[0] != "/app/project1" {
-		t.Errorf(".gally.yml should contain a depends_on tag with /app/project1")
-		t.FailNow()		
+	if p.DependsOn[0] != "project" {
+		t.Errorf(".gally.yml should contain a depends_on tag with project, instead %s", p.DependsOn[0])
+		t.FailNow()
+	}
+
+	p = New("../examples/notag", "..")
+	if p.DependsOn[0] != "repo" {
+		t.Errorf(".gally.yml should contain a depends_on tag with repo, instead %s", p.DependsOn[0])
+		t.FailNow()
 	}
 }
 func TestEnv(t *testing.T) {

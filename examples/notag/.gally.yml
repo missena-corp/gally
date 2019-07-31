@@ -1,7 +1,5 @@
 name: notag
 workdir: ..
-depends_on:
-  - ../repo
 ignore:
   - not/relevant/for/tests/*
 scripts:
@@ -14,6 +12,8 @@ strategies:
     only: master
 build: echo go building notag!
 tag: false
+depends_on:
+  - ../../repo
 env:
   - name: NAMESPACE
     value: "demo"
