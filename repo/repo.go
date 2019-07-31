@@ -2,7 +2,6 @@ package repo
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -78,7 +77,7 @@ func UpdatedFiles(commit string) (files []string, err error) {
 func Version(path string, dependencies []string, excluded []string) string {
 	args := []string{"log", "-1", "--format=%h", "--", path}
 	for _, dep := range dependencies {
-		args = append(args, fmt.Sprintf("%s%c%s", path, os.PathSeparator, dep))
+		args = append(args, dep)
 	}
 	for _, ex := range excluded {
 		args = append(args, fmt.Sprintf(":(exclude)%s/%s", path, ex))

@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -28,13 +29,13 @@ func captureOutput(f func()) []byte {
 func TestDependsOn(t *testing.T) {
 	t.Parallel()
 	p := New("../examples/tag", "..")
-	if p.DependsOn[0] != "project" {
+	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "project") {
 		t.Errorf(".gally.yml should contain a depends_on tag with project, instead %s", p.DependsOn[0])
 		t.FailNow()
 	}
 
 	p = New("../examples/notag", "..")
-	if p.DependsOn[0] != "repo" {
+	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "repo") {
 		t.Errorf(".gally.yml should contain a depends_on tag with repo, instead %s", p.DependsOn[0])
 		t.FailNow()
 	}

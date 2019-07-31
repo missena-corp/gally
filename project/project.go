@@ -241,12 +241,6 @@ func New(dir, rootDir string) (p *Project) {
 		if _, err := os.Stat(p.DependsOn[k]); os.IsNotExist(err) {
 			log.Fatalf("depends_on directory %q does not exist", p.DependsOn[k])
 		}
-		p.DependsOn[k] = strings.Replace(
-			p.DependsOn[k],
-			fmt.Sprintf("%s%c", p.RootDir, os.PathSeparator),
-			"",
-			-1,
-		)
 	}
 	return p
 }
@@ -294,13 +288,9 @@ func (p *Project) runBuild(version string) error {
 func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
-		deps := []string{}
-		for _, v := range p.DependsOn {
-			deps = append(deps, path.Join(p.RootDir, v))
-		}
 		out = append(out, map[string]interface{}{
 			"directory":    p.BaseDir,
-			"dependencies": deps,
+			"dependencies":  p.DependsOn,
 			"environment":  NewCleanEnv(p),
 			"name":         p.Name,
 			"update":       p.WasUpdated(),
@@ -373,6 +363,12 @@ func (p *Project) WasUpdated() bool {
 		if strings.HasPrefix(f, fmt.Sprintf("%s%c", p.BaseDir, os.PathSeparator)) && !p.ignored(f) {
 			p.Updated = newTrue()
 			return true
+		}
+		for _, v := range p.DependsOn {
+			if strings.HasPrefix(f, fmt.Sprintf("%s%c", v, os.PathSeparator)) && !p.ignored(f) {
+				p.Updated = newTrue()
+				return true
+			}
 		}
 	}
 	p.Updated = newFalse()
