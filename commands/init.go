@@ -28,7 +28,7 @@ var initCmd = &cobra.Command{
 			"tag: false\n" +
 			"env:\n" +
 			"  - name: NAMESPACE\n" +
-			"  - value: staging\n"
+			"    value: staging\n"
 		if _, err := os.Stat(path + string(filepath.Separator) + ".gally.yml"); os.IsNotExist(err) {
 			err := ioutil.WriteFile(path+string(filepath.Separator)+".gally.yml", []byte(out), 0644)
 			if err != nil {
