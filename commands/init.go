@@ -27,7 +27,8 @@ var initCmd = &cobra.Command{
 			"version: git log -1 --format='%%h' .\n" +
 			"tag: false\n" +
 			"env:\n" +
-			"  NAMESPACE: staging\n"
+			"  - name: NAMESPACE\n" +
+			"  - name: staging\n"
 		if _, err := os.Stat(path + string(filepath.Separator) + ".gally.yml"); os.IsNotExist(err) {
 			err := ioutil.WriteFile(path+string(filepath.Separator)+".gally.yml", []byte(out), 0644)
 			if err != nil {
