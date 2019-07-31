@@ -2,7 +2,6 @@ name: notag
 workdir: ..
 depends_on:
   - ../repo
-  - ../project
 ignore:
   - not/relevant/for/tests/*
 scripts:
