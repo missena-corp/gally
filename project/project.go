@@ -98,7 +98,7 @@ func BuildForceWithTag(name *string, rootDir string) error {
 }
 
 func BuildNoTag(name *string, rootDir string) error {
-	var projects Projects
+	projects := Projects{}
 	if name == nil {
 		projects = FindAllUpdated(rootDir)
 	} else {
@@ -288,14 +288,17 @@ func (p *Project) runBuild(version string) error {
 func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
-		out = append(out, map[string]interface{}{
-			"directory":    p.BaseDir,
-			"dependencies":  p.DependsOn,
-			"environment":  NewCleanEnv(p),
-			"name":         p.Name,
-			"update":       p.WasUpdated(),
-			"version":      p.Version(),
-		})
+		addition := map[string]interface{}{
+			"directory":   p.BaseDir,
+			"environment": NewCleanEnv(p),
+			"name":        p.Name,
+			"update":      p.WasUpdated(),
+			"version":     p.Version(),
+		}
+		if p.DependsOn != nil {
+			addition["dependencies"] = p.DependsOn
+		}
+		out = append(out, addition)
 	}
 	return out
 }
