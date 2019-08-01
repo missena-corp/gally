@@ -288,16 +288,17 @@ func (p *Project) runBuild(version string) error {
 func (projs Projects) ToSlice() []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
-		out = append(out, map[string]interface{}{
-			"directory":    p.BaseDir,
-			"environment":  NewCleanEnv(p),
-			"name":         p.Name,
-			"update":       p.WasUpdated(),
-			"version":      p.Version(),
-		})
-		if p.DependsOn != nil {
-			out["dependencies"] = p.DependsOn
+		addition := map[string]interface{}{
+			"directory":   p.BaseDir,
+			"environment": NewCleanEnv(p),
+			"name":        p.Name,
+			"update":      p.WasUpdated(),
+			"version":     p.Version(),
 		}
+		if p.DependsOn != nil {
+			addition["dependencies"] = p.DependsOn
+		}
+		out = append(out, addition)
 	}
 	return out
 }
