@@ -36,7 +36,7 @@ type Project struct {
 	RootDir       string
 	Scripts       map[string]string
 	Strategies    map[string]Strategy
-	Tag           *bool `mapstructure:"tag"`
+	Tag           bool `mapstructure:"tag"`
 	Updated       *bool
 	VersionScript string `mapstructure:"version"`
 }
@@ -72,7 +72,7 @@ func BuildForceWithTag(name *string, rootDir string) error {
 	if name == nil {
 		allProjects := FindAllUpdated(rootDir)
 		for _, v := range allProjects {
-			if v.wantTag() {
+			if v.Tag {
 				projects[v.Name] = v
 			}
 		}
@@ -81,7 +81,7 @@ func BuildForceWithTag(name *string, rootDir string) error {
 		if p == nil {
 			return fmt.Errorf("project %q not found", *name)
 		}
-		if p.wantTag() {
+		if p.Tag {
 			projects[*name] = p
 		}
 	}
@@ -109,7 +109,7 @@ func BuildNoTag(name *string, rootDir string) error {
 		projects[*name] = p
 	}
 	for _, p := range projects {
-		if !p.wantTag() {
+		if !p.Tag {
 			if err := p.runBuild(p.Version()); err != nil {
 				return err
 			}
@@ -183,10 +183,6 @@ func (p *Project) ignored(file string) bool {
 		}
 	}
 	return false
-}
-
-func (p *Project) wantTag() bool {
-	return p.Tag == nil || *(p.Tag)
 }
 
 // New reads current config in directory
