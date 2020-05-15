@@ -130,13 +130,25 @@ func Find(name string, rootDir string) *Project {
 }
 
 func findPaths(rootDir string) (dirs []string, err error) {
-	filepath.Walk(rootDir, func(p string, info os.FileInfo, err error) error {
-		if !info.IsDir() && info.Name() == configFileName {
-			dirs = append(dirs, path.Dir(p))
+	cmd := exec.Command("git", "ls-files")
+	cmd.Dir = rootDir
+	output, _ := cmd.Output()
+	base, err := filepath.Rel(".", rootDir)
+	if err != nil {
+		return
+	}
+	for _, v := range strings.Split(string(output), "\n") {
+		l := len(v) - len(configFileName)
+		if l >= 0 && v[l:] == configFileName {
+			if l == 0 {
+				dirs = append(dirs, base)
+			}
+			if l > 0 {
+				dirs = append(dirs, fmt.Sprintf("%s%s%s", base, "/", v[:l-1]))
+			}
 		}
-		return nil
-	})
-	return dirs, nil
+	}
+	return
 }
 
 func FindAll(rootDir string) Projects {
