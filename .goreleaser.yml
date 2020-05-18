@@ -9,8 +9,8 @@ builds:
       - amd64
     ldflags:
       - -s -w -X github.com/missena-corp/gally/helpers.BuildDate={{.Date}} -X github.com/missena-corp/gally/helpers.Version={{.Tag}}
-archive:
-  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-  format: tar.gz
-  replacements:
-    amd64: x86_64
+archives:
+  - name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+    format: tar.gz
+    replacements:
+      amd64: x86_64
