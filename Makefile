@@ -4,7 +4,7 @@ build:
 
 .PHONY: release
 release:
-	@curl -sL https://git.io/goreleaser | bash -s -- release --skip-validate --debug
+	@curl -sL https://git.io/goreleaser | bash -s -- release --skip-validate --debug --rm-dist
 
 .PHONY: tag
 tag:
