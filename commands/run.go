@@ -21,12 +21,10 @@ var runCmd = &cobra.Command{
 				jww.ERROR.Fatalf("could not find project %q", projectName)
 			}
 			projects[projectName] = project.FindByName(rootDir, projectName)
+		} else if force {
+			projects = project.FindAll(rootDir)
 		} else {
-			if !force {
-				projects = project.FindAllUpdated(rootDir)
-			} else {
-                projects = project.FindAll(rootDir)
-			}	
+			projects = project.FindAllUpdated(rootDir)
 		}
 		script := args[0]
 		for _, p := range projects {
