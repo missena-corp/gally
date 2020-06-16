@@ -30,7 +30,7 @@ func addTagFlag(cmd *cobra.Command) {
 }
 
 func addUpdatedProjectsFlag(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVarP(&projectName, "updated-projects", "u", "", "updated projects")
+	cmd.PersistentFlags().BoolVarP(&updatedProjects, "updated-projects", "u", "", "updated projects")
 }
 
 func addVerboseFlag(cmd *cobra.Command) {
