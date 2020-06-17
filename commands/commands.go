@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	projectName     string
-	rootDir         string
-	tag             string
-	updatedProjects bool
-	verbose         bool
-	force           bool
+	projectName string
+	rootDir     string
+	tag         string
+	updated     bool
+	verbose     bool
+	force       bool
 )
 
 func addProjectFlag(cmd *cobra.Command) {
@@ -29,8 +29,8 @@ func addTagFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&tag, "tag", "t", "", "build tag")
 }
 
-func addUpdatedProjectsFlag(cmd *cobra.Command) {
-	cmd.PersistentFlags().BoolVarP(&updatedProjects, "updated-projects", "u", false, "updated projects")
+func addupdatedFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&updated, "updated", "u", false, "updated projects")
 }
 
 func addVerboseFlag(cmd *cobra.Command) {
