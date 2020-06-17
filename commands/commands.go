@@ -12,6 +12,7 @@ var (
 	projectName string
 	rootDir     string
 	tag         string
+	updated     bool
 	verbose     bool
 	force       bool
 )
@@ -26,6 +27,10 @@ func addRootDirFlag(cmd *cobra.Command) {
 
 func addTagFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&tag, "tag", "t", "", "build tag")
+}
+
+func addupdatedFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&updated, "updated", "u", false, "updated projects")
 }
 
 func addVerboseFlag(cmd *cobra.Command) {
