@@ -84,7 +84,7 @@ func Version(path string, dependencies []string, excluded []string) string {
 	}
 	cmd := exec.Command("git", args...)
 	if out, err := cmd.Output(); err == nil {
-		return strings.TrimSpace(string(out))
+		return strings.TrimSpace(string(out))[:16]
 	}
 	return "unknown"
 }
