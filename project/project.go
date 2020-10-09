@@ -248,7 +248,7 @@ func New(dir, rootDir string) (p *Project) {
 	}
 
 	for k, v := range p.DependsOn {
-		p.DependsOn[k] = path.Join(p.BaseDir, v)
+		p.DependsOn[k] = path.Clean(path.Join(p.BaseDir, v))
 		if _, err := os.Stat(p.DependsOn[k]); os.IsNotExist(err) {
 			log.Fatalf("depends_on directory %q does not exist", p.DependsOn[k])
 		}
