@@ -75,7 +75,7 @@ func UpdatedFiles(commit string) (files []string, err error) {
 }
 
 func Version(path string, dependencies []string, excluded []string) string {
-	args := []string{"log", "-1", "--format=%h", "--", path}
+	args := []string{"log", "-1", "--format=%H", "--", path}
 	for _, dep := range dependencies {
 		args = append(args, dep)
 	}
@@ -84,7 +84,7 @@ func Version(path string, dependencies []string, excluded []string) string {
 	}
 	cmd := exec.Command("git", args...)
 	if out, err := cmd.Output(); err == nil {
-		return strings.TrimSpace(string(out))
+		return strings.TrimSpace(string(out))[:16]
 	}
 	return "unknown"
 }
