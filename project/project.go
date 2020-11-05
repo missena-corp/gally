@@ -213,6 +213,8 @@ func New(dir, rootDir string) (p *Project) {
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
+
+	// init Name based on current directory if not set in config
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
 	}
@@ -240,7 +242,7 @@ func New(dir, rootDir string) (p *Project) {
 		p.RootDir = d
 	}
 
-	// init Strategies
+	// init Strategies, set default strategies if not set
 	if len(p.Strategies) == 0 {
 		p.Strategies = defaultStrategies
 	}
