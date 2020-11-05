@@ -19,15 +19,17 @@ const configFileName = ".gally.yml"
 var envVars map[string]string
 
 type Project struct {
+	// BaseDir is the directory where the configuration file is located
 	BaseDir      string `mapstructure:"-"`
 	BuildScript  string `mapstructure:"build"`
 	Bumped       *bool
 	ConfigFile   string
 	DependsOn    []string `mapstructure:"depends_on"`
 	Dependencies Dependencies
-	Dir          string `mapstructure:"workdir"`
-	Disable      bool
-	Env          []struct {
+	// Dir is the directory where the work happen
+	Dir     string `mapstructure:"workdir"`
+	Disable bool
+	Env     []struct {
 		Name  string
 		Value string
 	}
