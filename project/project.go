@@ -23,7 +23,6 @@ type Project struct {
 	BuildScript string `mapstructure:"build"`
 	Bumped      *bool
 	ConfigFile  string
-	ContextDir  string   `mapstructure:"context"`
 	DependsOn   []string `mapstructure:"depends_on"`
 	Dir         string   `mapstructure:"workdir"`
 	Disable     bool
@@ -216,11 +215,6 @@ func New(dir, rootDir string) (p *Project) {
 	}
 	if p.Name == "" {
 		p.Name = filepath.Base(dir)
-	}
-	if p.ContextDir != "" && p.Dir == "" {
-		fmt.Fprintf(os.Stderr, "**Deprecated** Project %s, replace `context:` with `workdir: in .gally.yml`\n", p.Name)
-		p.Dir = p.ContextDir
-		p.ContextDir = ""
 	}
 
 	// init BaseDir
