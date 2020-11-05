@@ -67,7 +67,7 @@ func UpdatedFiles(commit string) (files []string, err error) {
 	root := Root()
 	for _, f := range strings.Split(string(out), "\n") {
 		if f != "" {
-			files = append(files, path.Join(root, strings.TrimSpace(f)))
+			files = append(files, path.Clean(path.Join(root, strings.TrimSpace(f))))
 		}
 	}
 

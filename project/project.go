@@ -19,18 +19,20 @@ const configFileName = ".gally.yml"
 var envVars map[string]string
 
 type Project struct {
-	BaseDir     string `mapstructure:"-"`
-	BuildScript string `mapstructure:"build"`
-	Bumped      *bool
-	ConfigFile  string
-	DependsOn   []string `mapstructure:"depends_on"`
-	Dir         string   `mapstructure:"workdir"`
-	Disable     bool
-	Env         []struct {
+	BaseDir      string `mapstructure:"-"`
+	BuildScript  string `mapstructure:"build"`
+	Bumped       *bool
+	ConfigFile   string
+	DependsOn    []string `mapstructure:"depends_on"`
+	Dependencies Dependencies
+	Dir          string `mapstructure:"workdir"`
+	Disable      bool
+	Env          []struct {
 		Name  string
 		Value string
 	}
 	Ignore        []string
+	IsLibrary     bool `mapstructure:"is_library"`
 	Name          string
 	RootDir       string
 	Scripts       map[string]string
@@ -225,7 +227,7 @@ func New(dir, rootDir string) (p *Project) {
 		p.Dir = dir
 	} else {
 		if !path.IsAbs(p.Dir) {
-			p.Dir = path.Join(dir, p.Dir)
+			p.Dir = path.Clean(path.Join(dir, p.Dir))
 		}
 		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
 			log.Fatalf("workdir directory %q does not exist", p.Dir)
@@ -233,7 +235,7 @@ func New(dir, rootDir string) (p *Project) {
 	}
 
 	// init RootDir
-	p.RootDir = rootDir
+	p.RootDir = path.Clean(rootDir)
 	if !path.IsAbs(rootDir) {
 		d, err := filepath.Abs(rootDir)
 		if err != nil {
@@ -247,11 +249,9 @@ func New(dir, rootDir string) (p *Project) {
 		p.Strategies = defaultStrategies
 	}
 
-	for k, v := range p.DependsOn {
-		p.DependsOn[k] = path.Clean(path.Join(p.BaseDir, v))
-		if _, err := os.Stat(p.DependsOn[k]); os.IsNotExist(err) {
-			log.Fatalf("depends_on directory %q does not exist", p.DependsOn[k])
-		}
+	// init Dependencies
+	for _, dep := range p.DependsOn {
+		p.Dependencies = append(p.Dependencies, New(dep, rootDir))
 	}
 	return p
 }
@@ -306,7 +306,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 			"update":      p.WasUpdated(),
 			"version":     p.Version(),
 		}
-		if p.DependsOn != nil {
+		if len(p.DependsOn) != 0 {
 			addition["dependencies"] = p.DependsOn
 		}
 		out = append(out, addition)
@@ -314,35 +314,10 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	return out
 }
 
-func UpdatedFilesByStrategies(strategies map[string]Strategy) []string {
-	files := make([]string, 0)
-	for name, opts := range strategies {
-		switch name {
-		case COMPARE_TO:
-			res, err := repo.UpdatedFiles(opts.Branch)
-			if err != nil {
-				continue
-			}
-			files = append(files, res...)
-		case PREVIOUS_COMMIT:
-			if !repo.IsOnBranch(opts.Only) {
-				continue
-			}
-			res, err := repo.UpdatedFiles("HEAD^1")
-			if err != nil {
-				continue
-			}
-			files = append(files, res...)
-		default:
-			log.Fatalf("unkown strategy %s", name)
-		}
-	}
-	return files
-}
-
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
-		return repo.Version(p.Dir, p.DependsOn, p.Ignore)
+		return repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))
@@ -373,13 +348,13 @@ func (p *Project) WasUpdated() bool {
 	if p.Updated != nil {
 		return *p.Updated
 	}
-	for _, f := range UpdatedFilesByStrategies(p.Strategies) {
-		if strings.HasPrefix(f, fmt.Sprintf("%s%c", p.BaseDir, os.PathSeparator)) && !p.ignored(f) {
+	for _, f := range p.Strategies.UpdatedFiles() {
+		if strings.HasPrefix(f, p.BaseDir) && !p.ignored(f) {
 			p.Updated = newTrue()
 			return true
 		}
-		for _, v := range p.DependsOn {
-			if strings.HasPrefix(f, fmt.Sprintf("%s%c", v, os.PathSeparator)) && !p.ignored(f) {
+		for _, dep := range p.Dependencies {
+			if dep.WasUpdated() {
 				p.Updated = newTrue()
 				return true
 			}
