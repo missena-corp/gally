@@ -199,6 +199,7 @@ func (p *Project) ignored(file string) bool {
 // New reads current config in directory
 // the function is expecting full path as argument
 func New(dir, rootDir string) (p *Project) {
+	log.Println("fdfdfdfdfdfd")
 	v := viper.New()
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
@@ -210,7 +211,7 @@ func New(dir, rootDir string) (p *Project) {
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file %q: %v", file, err)
+		log.Fatalf("could not read config file %q: %v", file, err)
 	}
 	if err := v.Unmarshal(&p); err != nil {
 		log.Fatalf("unable to decode file %s into struct: %v", file, err)
@@ -251,7 +252,7 @@ func New(dir, rootDir string) (p *Project) {
 
 	// init Dependencies
 	for _, dep := range p.DependsOn {
-		p.Dependencies = append(p.Dependencies, New(dep, rootDir))
+		p.Dependencies = append(p.Dependencies, New(path.Join(p.BaseDir, dep), rootDir))
 	}
 	return p
 }
@@ -274,6 +275,11 @@ func (p *Project) run(script string, env Env) error {
 	if p.Disable {
 		jww.WARN.Printf("project %q disabled", p.BaseDir)
 		return nil
+	}
+	for _, dep := range p.Dependencies {
+		if dep.IsLibrary {
+			dep.runBuild(dep.Version())
+		}
 	}
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = p.Dir

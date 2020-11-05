@@ -1,9 +1,9 @@
 package project
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"testing"
@@ -28,15 +28,16 @@ func captureOutput(f func()) []byte {
 
 func TestDependsOn(t *testing.T) {
 	t.Parallel()
-	p := New("../examples/tag", "..")
-	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "project") {
-		t.Errorf(".gally.yml should contain a depends_on tag with project, instead %s", p.DependsOn[0])
+	p := New("../examples/notag", "..")
+	if len(p.Dependencies) > 0 {
+		t.Errorf(".gally.yml should not contain a depends_on tag, instead: %v", p.DependsOn)
 		t.FailNow()
 	}
 
-	p = New("../examples/notag", "..")
-	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "repo") {
-		t.Errorf(".gally.yml should contain a depends_on tag with repo, instead %s", p.DependsOn[0])
+	p = New("../examples/tag", "..")
+	expected := path.Join(p.RootDir, "examples")
+	if p.Dependencies[0].Dir != expected {
+		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].Dir)
 		t.FailNow()
 	}
 }

@@ -11,9 +11,6 @@ strategies:
   previous-commit:
     only: master
 build: echo go building notag!
-tag: false
-depends_on:
-  - ../../repo
 env:
   - name: NAMESPACE
     value: "demo"
