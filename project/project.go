@@ -35,18 +35,13 @@ type Project struct {
 	Name          string
 	RootDir       string
 	Scripts       map[string]string
-	Strategies    map[string]Strategy
+	Strategies    Strategies
 	Tag           bool `mapstructure:"tag"`
 	Updated       *bool
 	VersionScript string `mapstructure:"version"`
 }
 
 type Projects map[string]*Project
-
-type Strategy struct {
-	Branch string
-	Only   string
-}
 
 func BuildTag(name *string, tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
@@ -227,6 +222,8 @@ func New(dir, rootDir string) (p *Project) {
 		p.Dir = p.ContextDir
 		p.ContextDir = ""
 	}
+
+	// init BaseDir
 	p.BaseDir = dir
 	if p.Dir == "" {
 		p.Dir = dir
@@ -238,6 +235,8 @@ func New(dir, rootDir string) (p *Project) {
 			log.Fatalf("workdir directory %q does not exist", p.Dir)
 		}
 	}
+
+	// init RootDir
 	p.RootDir = rootDir
 	if !path.IsAbs(rootDir) {
 		d, err := filepath.Abs(rootDir)
@@ -245,6 +244,11 @@ func New(dir, rootDir string) (p *Project) {
 			log.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
+	}
+
+	// init Strategies
+	if len(p.Strategies) == 0 {
+		p.Strategies = defaultStrategies
 	}
 
 	for k, v := range p.DependsOn {
