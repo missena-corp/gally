@@ -199,7 +199,6 @@ func (p *Project) ignored(file string) bool {
 // New reads current config in directory
 // the function is expecting full path as argument
 func New(dir, rootDir string) (p *Project) {
-	log.Println("fdfdfdfdfdfd")
 	v := viper.New()
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
