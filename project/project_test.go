@@ -27,7 +27,6 @@ func captureOutput(f func()) []byte {
 }
 
 func TestDependsOn(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/notag", "..")
 	if len(p.Dependencies) > 0 {
 		t.Errorf(".gally.yml should not contain a depends_on tag, instead: %v", p.DependsOn)
@@ -43,7 +42,6 @@ func TestDependsOn(t *testing.T) {
 }
 
 func TestIsLibrary(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/is_library/main", "..")
 	expected := "../examples/is_library/dependency/ok"
 	os.Remove(expected)
@@ -56,7 +54,6 @@ func TestIsLibrary(t *testing.T) {
 }
 
 func TestEnv(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/tag", "..")
 	if p.Env[0].Name != "NAMESPACE" || p.Env[0].Value != "staging" {
 		t.Errorf(".gally.yml should contain NAMESPACE=staging")
@@ -65,7 +62,6 @@ func TestEnv(t *testing.T) {
 }
 
 func TestFindProjectPaths(t *testing.T) {
-	t.Parallel()
 	paths, err := findPaths("..")
 	if err != nil {
 		t.Error(err)
@@ -84,7 +80,6 @@ func TestFindProjectPaths(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/tag", "..")
 	if !strings.HasPrefix(p.BaseDir, p.Dir) {
 		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
@@ -93,7 +88,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	t.Parallel()
 	expected := []byte("world\n")
 	c := Project{Scripts: map[string]string{"hello": "echo world"}}
 	out := captureOutput(func() {
@@ -122,7 +116,6 @@ func TestRun(t *testing.T) {
 }
 
 func TestRunBuild(t *testing.T) {
-	t.Parallel()
 	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
 	out := captureOutput(func() {
 		if err := c.runBuild("test"); err != nil {
@@ -138,7 +131,6 @@ func TestRunBuild(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	t.Parallel()
 	c := Project{BaseDir: ".", Dir: "../examples/tag", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.Version() != expected {
