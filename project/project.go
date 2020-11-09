@@ -227,13 +227,12 @@ func New(dir, rootDir string) (p *Project) {
 	p.BaseDir = dir
 	if p.Dir == "" {
 		p.Dir = dir
-	} else {
-		if !path.IsAbs(p.Dir) {
-			p.Dir = path.Clean(path.Join(dir, p.Dir))
-		}
-		if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-			log.Fatalf("workdir directory %q does not exist", p.Dir)
-		}
+	}
+	if !path.IsAbs(p.Dir) {
+		p.Dir = path.Clean(path.Join(dir, p.Dir))
+	}
+	if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
+		log.Fatalf("workdir directory %q does not exist", p.Dir)
 	}
 
 	// init RootDir
@@ -324,7 +323,6 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 func (p *Project) Version() string {
 	if p.VersionScript == "" {
 		return repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
-
 	}
 	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
 	return strings.TrimSpace(string(v))

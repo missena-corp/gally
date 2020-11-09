@@ -41,6 +41,20 @@ func TestDependsOn(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestIsLibrary(t *testing.T) {
+	t.Parallel()
+	p := New("../examples/is_library/main", "..")
+	expected := "../examples/is_library/dependency/ok"
+	os.Remove(expected)
+	p.runBuild(p.Version())
+	if _, err := os.Stat(expected); os.IsNotExist(err) {
+		t.Errorf("expected file to be built by dependency %q", expected)
+		t.FailNow()
+	}
+	os.Remove(expected)
+}
+
 func TestEnv(t *testing.T) {
 	t.Parallel()
 	p := New("../examples/tag", "..")
@@ -57,7 +71,12 @@ func TestFindProjectPaths(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	expected := []string{"../examples/notag", "../examples/tag"}
+	expected := []string{
+		"../examples/is_library/dependency",
+		"../examples/is_library/main",
+		"../examples/notag",
+		"../examples/tag",
+	}
 	if !cmp.Equal(paths, expected) {
 		t.Errorf("paths %v must be equal to %v", paths, expected)
 		t.FailNow()
