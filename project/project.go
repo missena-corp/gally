@@ -200,7 +200,7 @@ func (p *Project) ignored(file string) bool {
 
 // New reads current config in directory
 // the function is expecting full path as argument
-func New(dir, rootDir string) (p *Project) {
+func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	v := viper.New()
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
@@ -211,7 +211,7 @@ func New(dir, rootDir string) (p *Project) {
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
-	if err := v.ReadInConfig(); err != nil {
+	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		log.Fatalf("could not read config file %q: %v", file, err)
 	}
 	if err := v.Unmarshal(&p); err != nil {
@@ -252,7 +252,7 @@ func New(dir, rootDir string) (p *Project) {
 
 	// init Dependencies
 	for _, dep := range p.DependsOn {
-		p.Dependencies = append(p.Dependencies, New(path.Join(p.BaseDir, dep), rootDir))
+		p.Dependencies = append(p.Dependencies, New(path.Join(p.BaseDir, dep), rootDir, true))
 	}
 	return p
 }
