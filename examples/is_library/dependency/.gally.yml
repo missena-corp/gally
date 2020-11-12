@@ -1,0 +1,3 @@
+name: is_library_dependency
+build: touch ok
+is_library: true

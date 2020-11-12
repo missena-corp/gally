@@ -1,9 +1,9 @@
 package project
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"testing"
@@ -27,21 +27,33 @@ func captureOutput(f func()) []byte {
 }
 
 func TestDependsOn(t *testing.T) {
-	t.Parallel()
-	p := New("../examples/tag", "..")
-	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "project") {
-		t.Errorf(".gally.yml should contain a depends_on tag with project, instead %s", p.DependsOn[0])
+	p := New("../examples/notag", "..")
+	if len(p.Dependencies) > 0 {
+		t.Errorf(".gally.yml should not contain a depends_on tag, instead: %v", p.DependsOn)
 		t.FailNow()
 	}
 
-	p = New("../examples/notag", "..")
-	if p.DependsOn[0] != fmt.Sprintf("%s%c%s", p.RootDir, os.PathSeparator, "repo") {
-		t.Errorf(".gally.yml should contain a depends_on tag with repo, instead %s", p.DependsOn[0])
+	p = New("../examples/tag", "..")
+	expected := path.Join(p.RootDir, "examples")
+	if p.Dependencies[0].Dir != expected {
+		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].Dir)
 		t.FailNow()
 	}
 }
+
+func TestIsLibrary(t *testing.T) {
+	p := New("../examples/is_library/main", "..")
+	expected := "../examples/is_library/dependency/ok"
+	os.Remove(expected)
+	p.runBuild(p.Version())
+	if _, err := os.Stat(expected); os.IsNotExist(err) {
+		t.Errorf("expected file to be built by dependency %q", expected)
+		t.FailNow()
+	}
+	os.Remove(expected)
+}
+
 func TestEnv(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/tag", "..")
 	if p.Env[0].Name != "NAMESPACE" || p.Env[0].Value != "staging" {
 		t.Errorf(".gally.yml should contain NAMESPACE=staging")
@@ -50,13 +62,17 @@ func TestEnv(t *testing.T) {
 }
 
 func TestFindProjectPaths(t *testing.T) {
-	t.Parallel()
 	paths, err := findPaths("..")
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
-	expected := []string{"../examples/notag", "../examples/tag"}
+	expected := []string{
+		"../examples/is_library/dependency",
+		"../examples/is_library/main",
+		"../examples/notag",
+		"../examples/tag",
+	}
 	if !cmp.Equal(paths, expected) {
 		t.Errorf("paths %v must be equal to %v", paths, expected)
 		t.FailNow()
@@ -64,7 +80,6 @@ func TestFindProjectPaths(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	t.Parallel()
 	p := New("../examples/tag", "..")
 	if !strings.HasPrefix(p.BaseDir, p.Dir) {
 		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
@@ -73,7 +88,6 @@ func TestNew(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	t.Parallel()
 	expected := []byte("world\n")
 	c := Project{Scripts: map[string]string{"hello": "echo world"}}
 	out := captureOutput(func() {
@@ -87,7 +101,7 @@ func TestRun(t *testing.T) {
 		t.FailNow()
 	}
 
-	expected = []byte("env.go\nproject.go\nproject_test.go\nstrategies.go\n")
+	expected = []byte("dependency.go\nenv.go\nproject.go\nproject_test.go\nstrategies.go\n")
 	c = Project{Scripts: map[string]string{"list": "ls"}}
 	out = captureOutput(func() {
 		if err := c.Run("list"); err != nil {
@@ -102,7 +116,6 @@ func TestRun(t *testing.T) {
 }
 
 func TestRunBuild(t *testing.T) {
-	t.Parallel()
 	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
 	out := captureOutput(func() {
 		if err := c.runBuild("test"); err != nil {
@@ -118,7 +131,6 @@ func TestRunBuild(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	t.Parallel()
 	c := Project{BaseDir: ".", Dir: "../examples/tag", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.Version() != expected {
