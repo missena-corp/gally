@@ -43,7 +43,7 @@ func TestDependsOn(t *testing.T) {
 
 func TestIsLibrary(t *testing.T) {
 	p := New("../examples/is_library/main", "..")
-	expected := "../examples/is_library/dependency/ok"
+	expected := "../examples/is_library/dependency1/ok"
 	os.Remove(expected)
 	p.runBuild(p.Version())
 	if _, err := os.Stat(expected); os.IsNotExist(err) {
@@ -68,7 +68,7 @@ func TestFindProjectPaths(t *testing.T) {
 		t.FailNow()
 	}
 	expected := []string{
-		"../examples/is_library/dependency",
+		"../examples/is_library/dependency1",
 		"../examples/is_library/main",
 		"../examples/notag",
 		"../examples/tag",
