@@ -19,9 +19,12 @@ var envVars map[string]string
 
 type Project struct {
 	// BaseDir is the directory where the configuration file is located
-	BaseDir      string `mapstructure:"-"`
-	BuildScript  string `mapstructure:"build"`
-	ConfigFile   string
+	BaseDir string `mapstructure:"-"`
+	// command to build the project
+	BuildScript string `mapstructure:"build"`
+	// where the config file is located
+	ConfigFile string `mapstructure:"-"`
+	// list of dependency folders
 	DependsOn    []string `mapstructure:"depends_on"`
 	Dependencies Dependencies
 	// Dir is the directory where the work happen
@@ -279,6 +282,7 @@ func (p *Project) run(script string, env Env) error {
 		return nil
 	}
 	for _, dep := range p.Dependencies {
+		// build dependencies if they are libraries
 		if dep.IsLibrary {
 			dep.runBuild(dep.Version())
 		}

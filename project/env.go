@@ -15,8 +15,10 @@ func (p *Project) env(withVersion bool) (env Env) {
 	env["GALLY_ROOT"] = p.RootDir
 	if withVersion {
 		version := p.Version()
-		env["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
 		env["GALLY_PROJECT_VERSION"] = version
+		env["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+		// [TODO] remove, deprecated
+		env["GALLY_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
 	}
 	return env
 }
