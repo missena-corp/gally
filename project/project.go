@@ -267,7 +267,7 @@ func (p *Project) Run(s string) error {
 	if !ok {
 		return fmt.Errorf("script %q not available", s)
 	}
-	return p.run(script, NewEnv(p))
+	return p.run(script, p.env(true))
 }
 
 // run a command script for a project
@@ -295,11 +295,7 @@ func (p *Project) run(script string, env Env) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	env := NewEnv(p).Add(Env{
-		"GALLY_TAG":     fmt.Sprintf("%s@%s", p.Name, version),
-		"GALLY_VERSION": version,
-	})
-	return p.run(p.BuildScript, env)
+	return p.run(p.BuildScript, p.env(true))
 }
 
 func (projs Projects) ToSlice() []map[string]interface{} {
@@ -307,7 +303,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	for _, p := range projs {
 		addition := map[string]interface{}{
 			"directory":   p.BaseDir,
-			"environment": NewCleanEnv(p),
+			"environment": p.env(true),
 			"name":        p.Name,
 			"update":      p.WasUpdated(),
 			"version":     p.Version(),
@@ -324,7 +320,7 @@ func (p *Project) Version() string {
 	if p.VersionScript == "" {
 		return repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
 	}
-	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
+	v, _ := p.exec(p.VersionScript, p.env(false))
 	return strings.TrimSpace(string(v))
 }
 
