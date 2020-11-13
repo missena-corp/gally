@@ -1,3 +1,5 @@
+# Variables
+
 `gally` set environment variables that can be used in your scripts as well as
 in the `.gally.yml` file:
 
