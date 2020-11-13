@@ -20,12 +20,8 @@ const (
 
 var (
 	defaultStrategies = Strategies{
-		COMPARE_TO: {
-			Branch: "master",
-		},
-		PREVIOUS_COMMIT: {
-			Only: "master",
-		},
+		COMPARE_TO:      {Branch: "master"},
+		PREVIOUS_COMMIT: {Only: "master"},
 	}
 )
 

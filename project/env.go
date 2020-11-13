@@ -5,6 +5,7 @@ import "fmt"
 type Env map[string]string
 
 func (p *Project) env(withVersion bool) (env Env) {
+	// called first to not overwrite gally based env variables
 	for _, v := range p.Env {
 		env[v.Name] = v.Value
 	}
