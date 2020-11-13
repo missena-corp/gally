@@ -327,12 +327,14 @@ func (p *Project) Version() string {
 		return *p.version
 	}
 	if p.VersionScript == "" {
-		*p.version = repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
-		return *p.version
+		version := repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+		p.version = &version
+		return version
 	}
 	v, _ := p.exec(p.VersionScript, p.env(false))
-	*p.version = strings.TrimSpace(string(v))
-	return *p.version
+	version := strings.TrimSpace(string(v))
+	p.version = &version
+	return version
 }
 
 func (p *Project) WasBumped() (bumped bool) {
