@@ -9,8 +9,6 @@ import (
 	jww "github.com/spf13/jwalterweatherman"
 )
 
-const padding = 1
-
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "display all handled projects",
