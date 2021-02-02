@@ -272,7 +272,7 @@ func (p *Project) Run(s string) error {
 	if !ok {
 		return fmt.Errorf("script %q not available", s)
 	}
-	return p.run(script, p.env(true))
+	return p.run(script, p.env(generateVersion()))
 }
 
 // run a command script for a project
@@ -301,7 +301,7 @@ func (p *Project) run(script string, env Env) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	return p.run(p.BuildScript, p.env(true))
+	return p.run(p.BuildScript, p.env(setVersion(version)))
 }
 
 func (projs Projects) ToSlice() []map[string]interface{} {
@@ -309,7 +309,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	for _, p := range projs {
 		addition := map[string]interface{}{
 			"directory":   p.BaseDir,
-			"environment": p.env(true),
+			"environment": p.env(generateVersion()),
 			"name":        p.Name,
 			"update":      p.WasUpdated(),
 			"version":     p.Version(),
@@ -331,7 +331,7 @@ func (p *Project) Version() string {
 		p.version = &version
 		return version
 	}
-	v, _ := p.exec(p.VersionScript, p.env(false))
+	v, _ := p.exec(p.VersionScript, p.env())
 	version := strings.TrimSpace(string(v))
 	p.version = &version
 	return version
