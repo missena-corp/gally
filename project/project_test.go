@@ -116,7 +116,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestRunBuild(t *testing.T) {
-	c := Project{BuildScript: "echo go building $GALLY_VERSION!"}
+	c := Project{BuildScript: "echo go building $GALLY_PROJECT_VERSION!"}
 	out := captureOutput(func() {
 		if err := c.runBuild("test"); err != nil {
 			t.Error(err)
