@@ -9,13 +9,22 @@ import (
 )
 
 var (
-	projectName string
-	rootDir     string
-	tag         string
-	updated     bool
-	verbose     bool
-	force       bool
+	force        bool
+	noDependency bool
+	projectName  string
+	rootDir      string
+	tag          string
+	updated      bool
+	verbose      bool
 )
+
+func addForceFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "force the command")
+}
+
+func addNoDependencyFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&noDependency, "no-dependency", "nd", false, "skip dependency")
+}
 
 func addProjectFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&projectName, "project", "p", "", "project name")
@@ -29,16 +38,12 @@ func addTagFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&tag, "tag", "t", "", "build tag")
 }
 
-func addupdatedFlag(cmd *cobra.Command) {
+func addUpdatedFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&updated, "updated", "u", false, "updated projects")
 }
 
 func addVerboseFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
-}
-
-func addForceFlag(cmd *cobra.Command) {
-	cmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "force the command")
 }
 
 func handleVerboseFlag() {

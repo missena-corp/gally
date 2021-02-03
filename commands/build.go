@@ -11,10 +11,10 @@ var buildCmd = &cobra.Command{
 	Short: "build your script for updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
-        var p *string = nil
-        if projectName != "" {
-            p = &projectName
-        }
+		var p *string = nil
+		if projectName != "" {
+			p = &projectName
+		}
 		if tag == "" {
 			jww.INFO.Printf("building no tag projects")
 			if err := project.BuildNoTag(p, rootDir); err != nil {
@@ -22,10 +22,10 @@ var buildCmd = &cobra.Command{
 			}
 			if force {
 				jww.INFO.Printf("building projects with tag in force mode")
-					if err := project.BuildForceWithTag(p, rootDir); err != nil {
-						jww.ERROR.Fatalf("could not build tag projects: %v", err)
-					}
+				if err := project.BuildForceWithTag(p, rootDir); err != nil {
+					jww.ERROR.Fatalf("could not build tag projects: %v", err)
 				}
+			}
 			return
 		}
 		if err := project.BuildTag(p, tag, rootDir); err != nil {
