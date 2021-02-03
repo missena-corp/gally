@@ -24,7 +24,7 @@ var listCmd = &cobra.Command{
 			}
 			projects[projectName] = project.FindByName(rootDir, projectName)
 		} else if updated {
-			projects = project.FindAllUpdated(rootDir)
+			projects = project.FindAllUpdated(rootDir, noDependency)
 		} else {
 			projects = project.FindAll(rootDir)
 		}
@@ -34,7 +34,8 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	addNoDependencyFlag(listCmd)
 	addProjectFlag(listCmd)
-	addupdatedFlag(listCmd)
+	addUpdatedFlag(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

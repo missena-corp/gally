@@ -24,7 +24,7 @@ var runCmd = &cobra.Command{
 		} else if force {
 			projects = project.FindAll(rootDir)
 		} else {
-			projects = project.FindAllUpdated(rootDir)
+			projects = project.FindAllUpdated(rootDir, noDependency)
 		}
 		script := args[0]
 		for _, p := range projects {
@@ -36,7 +36,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	addProjectFlag(runCmd)
 	addForceFlag(runCmd)
+	addNoDependencyFlag(runCmd)
+	addProjectFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
 }

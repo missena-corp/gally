@@ -15,28 +15,31 @@ var buildCmd = &cobra.Command{
 		if projectName != "" {
 			p = &projectName
 		}
-		if tag == "" {
-			jww.INFO.Printf("building no tag projects")
-			if err := project.BuildNoTag(p, rootDir); err != nil {
-				jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
-			}
-			if force {
-				jww.INFO.Printf("building projects with tag in force mode")
-				if err := project.BuildForceWithTag(p, rootDir); err != nil {
-					jww.ERROR.Fatalf("could not build tag projects: %v", err)
-				}
+		if tag != "" {
+			if err := project.BuildTag(p, tag, rootDir); err != nil {
+				jww.ERROR.Fatalf("could not build properly project: %v", err)
 			}
 			return
 		}
-		if err := project.BuildTag(p, tag, rootDir); err != nil {
-			jww.ERROR.Fatalf("could not build properly project: %v", err)
+		if force {
+			jww.INFO.Println("building projects with tag in force mode")
+			if err := project.BuildForceWithoutTag(p, rootDir, noDependency); err != nil {
+				jww.ERROR.Fatalf("could not build tag projects: %v", err)
+			}
+			return
 		}
+		jww.INFO.Println("building no tag projects")
+		if err := project.BuildWithoutTag(p, rootDir, noDependency); err != nil {
+			jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
+		}
+
 	},
 }
 
 func init() {
-	addTagFlag(buildCmd)
-	addProjectFlag(buildCmd)
 	addForceFlag(buildCmd)
+	addNoDependencyFlag(buildCmd)
+	addProjectFlag(buildCmd)
+	addTagFlag(buildCmd)
 	rootCmd.AddCommand(buildCmd)
 }

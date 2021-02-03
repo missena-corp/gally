@@ -70,10 +70,10 @@ func BuildTag(name *string, tag string, rootDir string) error {
 	return p.runBuild(version)
 }
 
-func BuildForceWithTag(name *string, rootDir string) error {
+func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 	projects := Projects{}
 	if name == nil {
-		allProjects := FindAllUpdated(rootDir)
+		allProjects := FindAllUpdated(rootDir, noDep)
 		for _, v := range allProjects {
 			if v.Tag {
 				projects[v.Name] = v
@@ -100,10 +100,10 @@ func BuildForceWithTag(name *string, rootDir string) error {
 	return nil
 }
 
-func BuildNoTag(name *string, rootDir string) error {
+func BuildWithoutTag(name *string, rootDir string, noDep bool) error {
 	projects := Projects{}
 	if name == nil {
-		projects = FindAllUpdated(rootDir)
+		projects = FindAllUpdated(rootDir, noDep)
 	} else {
 		p := Find(*name, rootDir)
 		if p == nil {
@@ -173,10 +173,10 @@ func FindAll(rootDir string) Projects {
 	return projects
 }
 
-func FindAllUpdated(rootDir string) Projects {
+func FindAllUpdated(rootDir string, noDep bool) Projects {
 	projects := make(Projects)
 	for name, project := range FindAll(rootDir) {
-		if project.WasUpdated() {
+		if project.WasUpdated(noDep) {
 			projects[name] = project
 		}
 	}
@@ -312,7 +312,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 			"directory":   p.BaseDir,
 			"environment": p.env(generateVersion()),
 			"name":        p.Name,
-			"update":      p.WasUpdated(),
+			"update":      *p.updated,
 			"version":     p.Version(),
 		}
 		if len(p.DependsOn) != 0 {
@@ -338,27 +338,7 @@ func (p *Project) Version() string {
 	return version
 }
 
-func (p *Project) WasBumped() (bumped bool) {
-	if p.bumped != nil {
-		return *p.bumped
-	}
-	p.bumped = newFalse()
-	if !p.WasUpdated() {
-		return false
-	}
-	currentVersion := p.Version()
-	commit := "master"
-	if repo.IsOnBranch("master") {
-		commit = "HEAD^1"
-	}
-	repo.Checkout(commit, func() { bumped = p.Version() != currentVersion })
-	if bumped {
-		p.bumped = newTrue()
-	}
-	return bumped
-}
-
-func (p *Project) WasUpdated() bool {
+func (p *Project) WasUpdated(noDep bool) bool {
 	// cache response
 	if p.updated != nil {
 		return *p.updated
@@ -368,8 +348,11 @@ func (p *Project) WasUpdated() bool {
 			p.updated = newTrue()
 			return true
 		}
+		if noDep {
+			continue
+		}
 		for _, dep := range p.Dependencies {
-			if dep.WasUpdated() {
+			if dep.WasUpdated(noDep) {
 				p.updated = newTrue()
 				return true
 			}
