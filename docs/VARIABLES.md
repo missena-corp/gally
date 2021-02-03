@@ -14,5 +14,5 @@ in the `.gally.yml` file:
 - `GALLY_PROJECT_TAG` if the commit is tagged with the project, defines the version of
   that tag. ie `myproject@12345`
 
-  **Important Note:** `GALLY_TAG` is deprecated, should not be used and will be remove in a soon to come
-  release.
+**Important Note:** `GALLY_TAG` is deprecated, should not be used and will be remove in a soon to come
+release.

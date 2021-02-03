@@ -10,6 +10,7 @@ func generateVersion() envOpt {
 		version := p.Version()
 		(*e)["GALLY_PROJECT_VERSION"] = version
 		(*e)["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+		(*e)["GALLY_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
 	}
 }
 
@@ -17,6 +18,7 @@ func setVersion(version string) envOpt {
 	return func(p *Project, e *Env) {
 		(*e)["GALLY_PROJECT_VERSION"] = version
 		(*e)["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+		(*e)["GALLY_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
 	}
 }
 
