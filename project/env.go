@@ -3,55 +3,39 @@ package project
 import "fmt"
 
 type Env map[string]string
+type envOpt func(*Project, *Env)
 
-func (e Env) Add(m map[string]string) Env {
-	for k, v := range m {
-		e[k] = v
+func generateVersion() envOpt {
+	return func(p *Project, e *Env) {
+		version := p.Version()
+		(*e)["GALLY_PROJECT_VERSION"] = version
+		(*e)["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+		(*e)["GALLY_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
 	}
-	return e
 }
 
-func NewCleanEnv(p *Project) (env Env) {
-	env = Env{}
+func setVersion(version string) envOpt {
+	return func(p *Project, e *Env) {
+		(*e)["GALLY_PROJECT_VERSION"] = version
+		(*e)["GALLY_PROJECT_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+		(*e)["GALLY_TAG"] = fmt.Sprintf("%s@%s", p.Name, version)
+	}
+}
+
+func (p *Project) env(opts ...envOpt) Env {
+	env := Env{}
+	// called first to not overwrite gally based env variables
 	for _, v := range p.Env {
 		env[v.Name] = v.Value
 	}
 	env["GALLY_PROJECT_WORKDIR"] = p.Dir
-	env["GALLY_PROJECT_VERSION"] = p.Version()
 	env["GALLY_PROJECT_NAME"] = p.Name
 	env["GALLY_PROJECT_ROOT"] = p.BaseDir
 	env["GALLY_ROOT"] = p.RootDir
-	return
-}
-
-func NewEnv(p *Project) (env Env) {
-	env = Env{}
-	for _, v := range p.Env {
-		env[v.Name] = v.Value
+	for _, fn := range opts {
+		fn(p, &env)
 	}
-	env["GALLY_CWD"] = p.Dir
-	env["GALLY_NAME"] = p.Name
-	env["GALLY_PROJECT_WORKDIR"] = p.Dir
-	env["GALLY_PROJECT_VERSION"] = p.Version()
-	env["GALLY_PROJECT_NAME"] = p.Name
-	env["GALLY_PROJECT_ROOT"] = p.BaseDir
-	env["GALLY_ROOT"] = p.RootDir
-	env["GALLY_VERSION"] = p.Version()
-	return
-}
-
-func NewEnvNoVersion(p *Project) (env Env) {
-	env = Env{}
-	for _, v := range p.Env {
-		env[v.Name] = v.Value
-	}
-	env["GALLY_CWD"] = p.Dir
-	env["GALLY_NAME"] = p.Name
-	env["GALLY_PROJECT_WORKDIR"] = p.Dir
-	env["GALLY_PROJECT_NAME"] = p.Name
-	env["GALLY_PROJECT_ROOT"] = p.BaseDir
-	env["GALLY_ROOT"] = p.RootDir
-	return
+	return env
 }
 
 func (e Env) ToSlice() []string {

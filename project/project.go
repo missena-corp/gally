@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -20,10 +19,12 @@ var envVars map[string]string
 
 type Project struct {
 	// BaseDir is the directory where the configuration file is located
-	BaseDir      string `mapstructure:"-"`
-	BuildScript  string `mapstructure:"build"`
-	Bumped       *bool
-	ConfigFile   string
+	BaseDir string `mapstructure:"-"`
+	// command to build the project
+	BuildScript string `mapstructure:"build"`
+	// where the config file is located
+	ConfigFile string `mapstructure:"-"`
+	// list of dependency folders
 	DependsOn    []string `mapstructure:"depends_on"`
 	Dependencies Dependencies
 	// Dir is the directory where the work happen
@@ -39,9 +40,13 @@ type Project struct {
 	RootDir       string
 	Scripts       map[string]string
 	Strategies    Strategies
-	Tag           bool `mapstructure:"tag"`
-	Updated       *bool
+	Tag           bool   `mapstructure:"tag"`
 	VersionScript string `mapstructure:"version"`
+
+	// cache
+	bumped  *bool   `mapstructure:"-"`
+	updated *bool   `mapstructure:"-"`
+	version *string `mapstructure:"-"`
 }
 
 type Projects map[string]*Project
@@ -205,17 +210,17 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
 		if err != nil {
-			log.Fatalf("unable to expand directory %q: %v", d, err)
+			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		dir = d
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
-		log.Fatalf("could not read config file %q: %v", file, err)
+		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
 	if err := v.Unmarshal(&p); err != nil {
-		log.Fatalf("unable to decode file %s into struct: %v", file, err)
+		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
 	// init Name based on current directory if not set in config
@@ -232,7 +237,7 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		p.Dir = path.Clean(path.Join(dir, p.Dir))
 	}
 	if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-		log.Fatalf("workdir directory %q does not exist", p.Dir)
+		jww.FATAL.Fatalf("workdir directory %q does not exist", p.Dir)
 	}
 
 	// init RootDir
@@ -240,7 +245,7 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	if !path.IsAbs(rootDir) {
 		d, err := filepath.Abs(rootDir)
 		if err != nil {
-			log.Fatalf("unable to expand directory %q: %v", d, err)
+			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
 	}
@@ -267,7 +272,7 @@ func (p *Project) Run(s string) error {
 	if !ok {
 		return fmt.Errorf("script %q not available", s)
 	}
-	return p.run(script, NewEnv(p))
+	return p.run(script, p.env(generateVersion()))
 }
 
 // run a command script for a project
@@ -277,6 +282,7 @@ func (p *Project) run(script string, env Env) error {
 		return nil
 	}
 	for _, dep := range p.Dependencies {
+		// build dependencies if they are libraries
 		if dep.IsLibrary {
 			dep.runBuild(dep.Version())
 		}
@@ -295,11 +301,8 @@ func (p *Project) run(script string, env Env) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	env := NewEnv(p).Add(Env{
-		"GALLY_TAG":     fmt.Sprintf("%s@%s", p.Name, version),
-		"GALLY_VERSION": version,
-	})
-	return p.run(p.BuildScript, env)
+	jww.INFO.Printf("building %q version %q\n", p.Name, version)
+	return p.run(p.BuildScript, p.env(setVersion(version)))
 }
 
 func (projs Projects) ToSlice() []map[string]interface{} {
@@ -307,7 +310,7 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 	for _, p := range projs {
 		addition := map[string]interface{}{
 			"directory":   p.BaseDir,
-			"environment": NewCleanEnv(p),
+			"environment": p.env(generateVersion()),
 			"name":        p.Name,
 			"update":      p.WasUpdated(),
 			"version":     p.Version(),
@@ -321,18 +324,25 @@ func (projs Projects) ToSlice() []map[string]interface{} {
 }
 
 func (p *Project) Version() string {
-	if p.VersionScript == "" {
-		return repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+	if p.version != nil {
+		return *p.version
 	}
-	v, _ := p.exec(p.VersionScript, NewEnvNoVersion(p))
-	return strings.TrimSpace(string(v))
+	if p.VersionScript == "" {
+		version := repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+		p.version = &version
+		return version
+	}
+	v, _ := p.exec(p.VersionScript, p.env())
+	version := strings.TrimSpace(string(v))
+	p.version = &version
+	return version
 }
 
 func (p *Project) WasBumped() (bumped bool) {
-	if p.Bumped != nil {
-		return *p.Bumped
+	if p.bumped != nil {
+		return *p.bumped
 	}
-	p.Bumped = newFalse()
+	p.bumped = newFalse()
 	if !p.WasUpdated() {
 		return false
 	}
@@ -343,28 +353,28 @@ func (p *Project) WasBumped() (bumped bool) {
 	}
 	repo.Checkout(commit, func() { bumped = p.Version() != currentVersion })
 	if bumped {
-		p.Bumped = newTrue()
+		p.bumped = newTrue()
 	}
 	return bumped
 }
 
 func (p *Project) WasUpdated() bool {
 	// cache response
-	if p.Updated != nil {
-		return *p.Updated
+	if p.updated != nil {
+		return *p.updated
 	}
 	for _, f := range p.Strategies.UpdatedFiles() {
 		if strings.HasPrefix(f, p.BaseDir) && !p.ignored(f) {
-			p.Updated = newTrue()
+			p.updated = newTrue()
 			return true
 		}
 		for _, dep := range p.Dependencies {
 			if dep.WasUpdated() {
-				p.Updated = newTrue()
+				p.updated = newTrue()
 				return true
 			}
 		}
 	}
-	p.Updated = newFalse()
+	p.updated = newFalse()
 	return false
 }
