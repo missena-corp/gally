@@ -301,6 +301,7 @@ func (p *Project) run(script string, env Env) error {
 }
 
 func (p *Project) runBuild(version string) error {
+	jww.INFO.Printf("building %q version %q\n", p.Name, version)
 	return p.run(p.BuildScript, p.env(setVersion(version)))
 }
 
