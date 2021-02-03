@@ -21,18 +21,16 @@ var buildCmd = &cobra.Command{
 			}
 			return
 		}
+		jww.INFO.Println("building no tag projects")
+		if err := project.BuildWithoutTag(p, rootDir, noDependency); err != nil {
+			jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
+		}
 		if force {
 			jww.INFO.Println("building projects with tag in force mode")
 			if err := project.BuildForceWithoutTag(p, rootDir, noDependency); err != nil {
 				jww.ERROR.Fatalf("could not build tag projects: %v", err)
 			}
-			return
 		}
-		jww.INFO.Println("building no tag projects")
-		if err := project.BuildWithoutTag(p, rootDir, noDependency); err != nil {
-			jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
-		}
-
 	},
 }
 

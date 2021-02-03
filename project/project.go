@@ -74,9 +74,9 @@ func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 	projects := Projects{}
 	if name == nil {
 		allProjects := FindAllUpdated(rootDir, noDep)
-		for _, v := range allProjects {
-			if v.Tag {
-				projects[v.Name] = v
+		for _, p := range allProjects {
+			if p.Tag {
+				projects[p.Name] = p
 			}
 		}
 	} else {
