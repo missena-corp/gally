@@ -14,16 +14,20 @@ var versionCmd = &cobra.Command{
 	Aliases: []string{"v"},
 	Short:   "Gally version's number",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		if len(args) == 0 && projectName == "" {
 			fmt.Println(gallyVersionString())
 			return
 		}
-		p := project.Find(args[0], rootDir)
+		if projectName == "" {
+			projectName = args[0]
+		}
+		p := project.Find(projectName, rootDir)
 		fmt.Println(p.Version())
 	},
 }
 
 func init() {
+	addProjectFlag(versionCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
