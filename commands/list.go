@@ -12,8 +12,9 @@ import (
 const padding = 1
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "display all handled projects",
+	Use:     "list",
+	Aliases: []string{"l", "ls"},
+	Short:   "display all handled projects",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		projects := project.Projects{}

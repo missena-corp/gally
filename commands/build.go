@@ -7,8 +7,9 @@ import (
 )
 
 var buildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "build your script for updated files",
+	Use:     "build",
+	Aliases: []string{"b"},
+	Short:   "build your script for updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		var p *string = nil

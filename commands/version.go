@@ -10,8 +10,9 @@ import (
 )
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Gally version's number",
+	Use:     "version",
+	Aliases: []string{"v"},
+	Short:   "Gally version's number",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println(gallyVersionString())

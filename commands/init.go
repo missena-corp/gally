@@ -12,8 +12,9 @@ import (
 )
 
 var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "create a manifest in the local directory",
+	Use:     "init",
+	Aliases: []string{"i"},
+	Short:   "create a manifest in the local directory",
 	Run: func(cmd *cobra.Command, args []string) {
 		cwd, _ := filepath.Abs(".")
 		if projectName == "" {

@@ -7,8 +7,9 @@ import (
 )
 
 var runCmd = &cobra.Command{
-	Use:   "run [script]",
-	Short: "run your script on projects having updated files",
+	Use:     "run [script]",
+	Aliases: []string{"exec"},
+	Short:   "run your script on projects having updated files",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if len(args) == 0 {
