@@ -16,7 +16,9 @@ var initCmd = &cobra.Command{
 	Short: "create a manifest in the local directory",
 	Run: func(cmd *cobra.Command, args []string) {
 		cwd, _ := filepath.Abs(".")
-		_, name := filepath.Split(cwd)
+		if projectName == "" {
+			_, projectName = filepath.Split(cwd)
+		}
 		f := path.Join(cwd, ".gally.yml")
 		if _, err := os.Stat(f); !os.IsNotExist(err) && !force {
 			fmt.Println("File .gally.yml already exists.")
@@ -27,7 +29,7 @@ name: %s
 scripts:
 	test: echo "no test yet"
 build: echo "building %s 💖!"
-`, name, name)
+`, projectName, projectName)
 		if err := ioutil.WriteFile(f, []byte(config), 0644); err != nil {
 			jww.ERROR.Fatalf("cannot create config file: %v", err)
 		}
@@ -37,5 +39,6 @@ build: echo "building %s 💖!"
 
 func init() {
 	addForceFlag(initCmd)
+	addProjectFlag(initCmd)
 	rootCmd.AddCommand(initCmd)
 }
