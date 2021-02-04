@@ -34,7 +34,7 @@ build: echo "building %s 💖!"
 		if err := ioutil.WriteFile(f, []byte(config), 0644); err != nil {
 			jww.ERROR.Fatalf("cannot create config file: %v", err)
 		}
-		jww.INFO.Println("File .gally.yml created. Feel free to edit it!")
+		fmt.Println("File .gally.yml created. Feel free to edit it!")
 	},
 }
 
