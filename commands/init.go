@@ -18,7 +18,7 @@ var initCmd = &cobra.Command{
 		cwd, _ := filepath.Abs(".")
 		_, name := filepath.Split(cwd)
 		f := path.Join(cwd, ".gally.yml")
-		if _, err := os.Stat(f); !os.IsNotExist(err) {
+		if _, err := os.Stat(f); !os.IsNotExist(err) && !force {
 			fmt.Println("File .gally.yml already exists.")
 			return
 		}
@@ -36,5 +36,6 @@ build: echo "building %s 💖!"
 }
 
 func init() {
+	addForceFlag(initCmd)
 	rootCmd.AddCommand(initCmd)
 }
