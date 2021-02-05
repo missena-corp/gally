@@ -7,6 +7,7 @@ import (
 	"github.com/missena-corp/gally/helpers"
 	"github.com/missena-corp/gally/project"
 	"github.com/spf13/cobra"
+	jww "github.com/spf13/jwalterweatherman"
 )
 
 var versionCmd = &cobra.Command{
@@ -19,6 +20,7 @@ var versionCmd = &cobra.Command{
 			return
 		}
 		if projectName == "" {
+			jww.WARN.Println("using 'gally version <project>' is deprecated now use 'gally version -p <project>'")
 			projectName = args[0]
 		}
 		p := project.Find(projectName, rootDir)
@@ -34,6 +36,6 @@ func init() {
 func gallyVersionString() string {
 	program := "Gally, the monorepo slayer"
 	version := helpers.Version
-	osArch := runtime.GOOS + "/" + runtime.GOARCH
+	osArch := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
 	return fmt.Sprintf("%s %s %s BuildDate: %s", program, version, osArch, helpers.BuildDate)
 }
