@@ -51,7 +51,7 @@ type Project struct {
 
 type Projects map[string]*Project
 
-func BuildTag(name *string, tag string, rootDir string) error {
+func BuildTag(name string, tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
 	if len(sp) != 2 {
 		return fmt.Errorf("%q is not a valid tag", tag)
@@ -59,8 +59,8 @@ func BuildTag(name *string, tag string, rootDir string) error {
 	p := Find(sp[0], rootDir)
 	if p == nil {
 		return fmt.Errorf("project %q not found", sp[0])
-	} else if p != nil && name != nil && p.Name != *name {
-		return fmt.Errorf("project %s and tag %q do not match", *name, sp[0])
+	} else if p != nil && name != "" && p.Name != name {
+		return fmt.Errorf("project %s and tag %q do not match", name, sp[0])
 	}
 	version := p.Version()
 	// this allow to have project without `version` defined
@@ -70,9 +70,9 @@ func BuildTag(name *string, tag string, rootDir string) error {
 	return p.runBuild(version)
 }
 
-func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
+func BuildForceWithoutTag(name string, rootDir string, noDep bool) error {
 	projects := Projects{}
-	if name == nil {
+	if name == "" {
 		allProjects := FindAllUpdated(rootDir, noDep)
 		for _, p := range allProjects {
 			if p.Tag {
@@ -80,12 +80,12 @@ func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 			}
 		}
 	} else {
-		p := Find(*name, rootDir)
+		p := Find(name, rootDir)
 		if p == nil {
-			return fmt.Errorf("project %q not found", *name)
+			return fmt.Errorf("project %q not found", name)
 		}
 		if p.Tag {
-			projects[*name] = p
+			projects[name] = p
 		}
 	}
 	for _, p := range projects {
@@ -100,16 +100,16 @@ func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 	return nil
 }
 
-func BuildWithoutTag(name *string, rootDir string, noDep bool) error {
+func BuildWithoutTag(name string, rootDir string, noDep bool) error {
 	projects := Projects{}
-	if name == nil {
+	if name == "" {
 		projects = FindAllUpdated(rootDir, noDep)
 	} else {
-		p := Find(*name, rootDir)
+		p := Find(name, rootDir)
 		if p == nil {
-			return fmt.Errorf("project %q not found", *name)
+			return fmt.Errorf("project %q not found", name)
 		}
-		projects[*name] = p
+		projects[name] = p
 	}
 	for _, p := range projects {
 		if !p.Tag {

@@ -16,6 +16,7 @@ var (
 	tag          string
 	updated      bool
 	verbose      bool
+	version      string
 )
 
 func addForceFlag(cmd *cobra.Command) {
@@ -44,6 +45,10 @@ func addUpdatedFlag(cmd *cobra.Command) {
 
 func addVerboseFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "log level info")
+}
+
+func addVersionFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVarP(&version, "version", "", "", "project version")
 }
 
 func handleVerboseFlag() {
