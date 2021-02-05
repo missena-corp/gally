@@ -11,6 +11,7 @@ var buildCmd = &cobra.Command{
 	Aliases: []string{"b"},
 	Short:   "build your script for updated files",
 	Run: func(cmd *cobra.Command, args []string) {
+		jww.WARN.Println("using 'gally build' is deprecated now use 'gally run build'")
 		handleVerboseFlag()
 		var p *string = nil
 		if projectName != "" {
