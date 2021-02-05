@@ -12,8 +12,9 @@ import (
 const padding = 1
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "display all handled projects",
+	Use:     "list",
+	Aliases: []string{"l", "ls"},
+	Short:   "display all handled projects",
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		projects := project.Projects{}
@@ -24,7 +25,7 @@ var listCmd = &cobra.Command{
 			}
 			projects[projectName] = project.FindByName(rootDir, projectName)
 		} else if updated {
-			projects = project.FindAllUpdated(rootDir)
+			projects = project.FindAllUpdated(rootDir, noDependency)
 		} else {
 			projects = project.FindAll(rootDir)
 		}
@@ -34,7 +35,8 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	addNoDependencyFlag(listCmd)
 	addProjectFlag(listCmd)
-	addupdatedFlag(listCmd)
+	addUpdatedFlag(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

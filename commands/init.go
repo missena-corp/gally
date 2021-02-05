@@ -4,43 +4,42 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	jww "github.com/spf13/jwalterweatherman"
 )
 
 var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "create a manifest in the local directory",
+	Use:     "init",
+	Aliases: []string{"i"},
+	Short:   "create a manifest in the local directory",
 	Run: func(cmd *cobra.Command, args []string) {
-		path, _ := filepath.Abs(".")
-		_, name := filepath.Split(path)
-		out := fmt.Sprintf("name: %s\n", name) +
-			"scripts:\n" +
-			fmt.Sprintf("  test: echo \"testing %s 🤞!\"\n", name) +
-			"strategies:\n" +
-			"  compare-to:\n" +
-			"    branch: master\n" +
-			"  previous-commit:\n" +
-			"    only: master\n" +
-			fmt.Sprintf("build: echo \"building %s 💖!\"\n", name) +
-			"version: git log -1 --format='%%h' .\n" +
-			"tag: false\n" +
-			"env:\n" +
-			"  - name: NAMESPACE\n" +
-			"    value: staging\n"
-		if _, err := os.Stat(path + string(filepath.Separator) + ".gally.yml"); os.IsNotExist(err) {
-			err := ioutil.WriteFile(path+string(filepath.Separator)+".gally.yml", []byte(out), 0644)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("File .gally.yml created. Feel free to edit it!")
-		} else {
-			fmt.Println("File .gally.yml already exists.")
+		cwd, _ := filepath.Abs(".")
+		if projectName == "" {
+			_, projectName = filepath.Split(cwd)
 		}
+		f := path.Join(cwd, ".gally.yml")
+		if _, err := os.Stat(f); !os.IsNotExist(err) && !force {
+			fmt.Println("File .gally.yml already exists.")
+			return
+		}
+		config := fmt.Sprintf(`
+name: %s
+scripts:
+	test: echo "no test yet"
+build: echo "building %s 💖!"
+`, projectName, projectName)
+		if err := ioutil.WriteFile(f, []byte(config), 0644); err != nil {
+			jww.ERROR.Fatalf("cannot create config file: %v", err)
+		}
+		fmt.Println("File .gally.yml created. Feel free to edit it!")
 	},
 }
 
 func init() {
+	addForceFlag(initCmd)
+	addProjectFlag(initCmd)
 	rootCmd.AddCommand(initCmd)
 }
