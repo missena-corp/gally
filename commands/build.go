@@ -13,23 +13,19 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		jww.WARN.Println("using 'gally build' is deprecated now use 'gally run build'")
 		handleVerboseFlag()
-		var p *string = nil
-		if projectName != "" {
-			p = &projectName
-		}
 		if tag != "" {
-			if err := project.BuildTag(p, tag, rootDir); err != nil {
+			if err := project.BuildTag(projectName, tag, rootDir); err != nil {
 				jww.ERROR.Fatalf("could not build properly project: %v", err)
 			}
 			return
 		}
 		jww.INFO.Println("building no tag projects")
-		if err := project.BuildWithoutTag(p, rootDir, noDependency); err != nil {
+		if err := project.BuildWithoutTag(projectName, rootDir, noDependency); err != nil {
 			jww.ERROR.Fatalf("could not build no-tag projects: %v", err)
 		}
 		if force {
 			jww.INFO.Println("building projects with tag in force mode")
-			if err := project.BuildForceWithoutTag(p, rootDir, noDependency); err != nil {
+			if err := project.BuildForceWithoutTag(projectName, rootDir, noDependency); err != nil {
 				jww.ERROR.Fatalf("could not build tag projects: %v", err)
 			}
 		}
@@ -41,5 +37,6 @@ func init() {
 	addNoDependencyFlag(buildCmd)
 	addProjectFlag(buildCmd)
 	addTagFlag(buildCmd)
+	addVersionFlag(buildCmd)
 	rootCmd.AddCommand(buildCmd)
 }
