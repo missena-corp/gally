@@ -216,6 +216,9 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
+	v.SetDefault("Dir", dir)
+	v.SetDefault("Name", filepath.Base(dir))
+	v.SetDefault("Strategies", defaultStrategies)
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -223,16 +226,8 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
-	// init Name based on current directory if not set in config
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
-	}
-
 	// init BaseDir
 	p.BaseDir = dir
-	if p.Dir == "" {
-		p.Dir = dir
-	}
 	if !path.IsAbs(p.Dir) {
 		p.Dir = path.Clean(path.Join(dir, p.Dir))
 	}
@@ -248,11 +243,6 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
-	}
-
-	// init Strategies, set default strategies if not set
-	if len(p.Strategies) == 0 {
-		p.Strategies = defaultStrategies
 	}
 
 	// init Dependencies
