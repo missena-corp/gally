@@ -146,11 +146,10 @@ func findPaths(rootDir string) (dirs []string, err error) {
 	for _, v := range strings.Split(string(output), "\n") {
 		l := len(v) - len(configFileName)
 		if l >= 0 && v[l:] == configFileName {
-			if l == 0 {
-				dirs = append(dirs, base)
-			}
 			if l > 0 {
 				dirs = append(dirs, fmt.Sprintf("%s%s%s", base, "/", v[:l-1]))
+			} else {
+				dirs = append(dirs, base)
 			}
 		}
 	}
