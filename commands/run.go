@@ -38,6 +38,7 @@ var runCmd = &cobra.Command{
 
 func init() {
 	addForceFlag(runCmd)
+	addIgnoreMissingFlag(runCmd)
 	addNoDependencyFlag(runCmd)
 	addProjectFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
