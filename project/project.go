@@ -51,21 +51,16 @@ type Project struct {
 
 type Projects map[string]*Project
 
-func BuildTag(name string, tag string, rootDir string) error {
-	sp := strings.Split(tag, "@")
-	if len(sp) != 2 {
-		return fmt.Errorf("%q is not a valid tag", tag)
-	}
-	p := Find(sp[0], rootDir)
+func BuildVersion(name string, version string, rootDir string) error {
+	p := Find(name, rootDir)
 	if p == nil {
-		return fmt.Errorf("project %q not found", sp[0])
+		return fmt.Errorf("project %q not found", name)
 	} else if p != nil && name != "" && p.Name != name {
-		return fmt.Errorf("project %s and tag %q do not match", name, sp[0])
+		return fmt.Errorf("project %s and tag %q do not match", name, name)
 	}
-	version := p.Version()
 	// this allow to have project without `version` defined
-	if version != "" && version != sp[1] {
-		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
+	if version != "" {
+		return fmt.Errorf("versions mismatch %q≠%q", version, version)
 	}
 	return p.runBuild(version)
 }
