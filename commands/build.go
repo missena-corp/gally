@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"strings"
+
 	"github.com/missena-corp/gally/project"
 	"github.com/spf13/cobra"
 	jww "github.com/spf13/jwalterweatherman"
@@ -14,7 +16,11 @@ var buildCmd = &cobra.Command{
 		jww.WARN.Println("using 'gally build' is deprecated now use 'gally run build'")
 		handleVerboseFlag()
 		if tag != "" {
-			if err := project.BuildTag(projectName, tag, rootDir); err != nil {
+			sp := strings.Split(tag, "@")
+			if len(sp) != 2 {
+				jww.ERROR.Fatalf("%q is not a valid tag", tag)
+			}
+			if err := project.BuildVersion(sp[0], sp[1], rootDir); err != nil {
 				jww.ERROR.Fatalf("could not build properly project: %v", err)
 			}
 			return
