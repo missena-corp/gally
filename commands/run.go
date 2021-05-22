@@ -30,7 +30,7 @@ var runCmd = &cobra.Command{
 		script := args[0]
 		for _, p := range projects {
 			if err := p.Run(script); err != nil {
-				jww.ERROR.Fatalf("could not run properly script %q: %v", script, err)
+				jww.ERROR.Fatalf("could not run properly script %q for %q: %v", script, p.Name, err)
 			}
 		}
 	},
