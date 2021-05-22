@@ -1,6 +1,7 @@
 package project
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -111,6 +112,16 @@ func TestRun(t *testing.T) {
 	})
 	if !cmp.Equal(out, expected) {
 		t.Errorf("output must be equal to %q but is equal to %q", expected, out)
+		t.FailNow()
+	}
+}
+
+func TestToSlice(t *testing.T) {
+	expected := "[{\"directory\":\"\",\"environment\":{\"GALLY_PROJECT_NAME\":\"hello\",\"GALLY_PROJECT_ROOT\":\"\",\"GALLY_PROJECT_TAG\":\"hello@unknown\",\"GALLY_PROJECT_VERSION\":\"unknown\",\"GALLY_PROJECT_WORKDIR\":\"\",\"GALLY_ROOT\":\"\",\"GALLY_TAG\":\"hello@unknown\"},\"name\":\"hello\",\"update\":false,\"version\":\"unknown\"}]"
+	p := Projects{"hello": &Project{Name: "hello"}}
+	j, _ := json.Marshal(p.ToSlice(true))
+	if string(j) != expected {
+		t.Errorf("output must be equal to %q but is equal to %q", expected, string(j))
 		t.FailNow()
 	}
 }
