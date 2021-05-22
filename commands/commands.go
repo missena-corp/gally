@@ -23,7 +23,7 @@ func addForceFlag(cmd *cobra.Command) {
 }
 
 func addNoDependencyFlag(cmd *cobra.Command) {
-	cmd.PersistentFlags().BoolVarP(&noDependency, "no-dependency", "nd", false, "skip dependency")
+	cmd.PersistentFlags().BoolVarP(&noDependency, "no-dependency", "n", false, "skip dependency")
 }
 
 func addProjectFlag(cmd *cobra.Command) {
