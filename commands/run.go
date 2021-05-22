@@ -15,18 +15,19 @@ var runCmd = &cobra.Command{
 		if len(args) == 0 {
 			jww.ERROR.Fatalf("no script provided in command")
 		}
-		projects := project.Projects{}
-		if projectName != "" {
-			p := project.FindByName(rootDir, projectName)
-			if p == nil {
-				jww.ERROR.Fatalf("could not find project %q", projectName)
+		projects := func() project.Projects {
+			if projectName != "" {
+				p := project.FindByName(rootDir, projectName)
+				if p == nil {
+					jww.ERROR.Fatalf("could not find project %q", projectName)
+				}
+				return project.Projects{projectName: project.FindByName(rootDir, projectName)}
 			}
-			projects[projectName] = project.FindByName(rootDir, projectName)
-		} else if force {
-			projects = project.FindAll(rootDir)
-		} else {
-			projects = project.FindAllUpdated(rootDir, noDependency)
-		}
+			if force {
+				return project.FindAll(rootDir)
+			}
+			return project.FindAllUpdated(rootDir, noDependency)
+		}()
 		script := args[0]
 		for _, p := range projects {
 			if err := p.Run(script); err != nil {
