@@ -305,14 +305,14 @@ func (p *Project) runBuild(version string) error {
 	return p.run(p.BuildScript, p.env(setVersion(version)))
 }
 
-func (projs Projects) ToSlice() []map[string]interface{} {
+func (projs Projects) ToSlice(noDep bool) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0)
 	for _, p := range projs {
 		addition := map[string]interface{}{
 			"directory":   p.BaseDir,
 			"environment": p.env(generateVersion()),
 			"name":        p.Name,
-			"update":      *p.updated,
+			"update":      p.WasUpdated(noDep),
 			"version":     p.Version(),
 		}
 		if len(p.DependsOn) != 0 {

@@ -29,7 +29,7 @@ var listCmd = &cobra.Command{
 		} else {
 			projects = project.FindAll(rootDir)
 		}
-		out, _ := json.MarshalIndent(projects.ToSlice(), "", "\t")
+		out, _ := json.MarshalIndent(projects.ToSlice(noDependency), "", "\t")
 		fmt.Println(string(out))
 	},
 }
