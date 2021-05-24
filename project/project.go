@@ -51,28 +51,23 @@ type Project struct {
 
 type Projects map[string]*Project
 
-func BuildTag(name *string, tag string, rootDir string) error {
-	sp := strings.Split(tag, "@")
-	if len(sp) != 2 {
-		return fmt.Errorf("%q is not a valid tag", tag)
-	}
-	p := Find(sp[0], rootDir)
+func BuildVersion(name string, version string, rootDir string) error {
+	p := Find(name, rootDir)
 	if p == nil {
-		return fmt.Errorf("project %q not found", sp[0])
-	} else if p != nil && name != nil && p.Name != *name {
-		return fmt.Errorf("project %s and tag %q do not match", *name, sp[0])
+		return fmt.Errorf("project %q not found", name)
+	} else if p != nil && name != "" && p.Name != name {
+		return fmt.Errorf("project %s and tag %q do not match", name, name)
 	}
-	version := p.Version()
 	// this allow to have project without `version` defined
-	if version != "" && version != sp[1] {
-		return fmt.Errorf("versions mismatch %q≠%q", sp[1], version)
+	if version != "" {
+		return fmt.Errorf("versions mismatch %q≠%q", version, version)
 	}
 	return p.runBuild(version)
 }
 
-func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
+func BuildForceWithoutTag(name string, rootDir string, noDep bool) error {
 	projects := Projects{}
-	if name == nil {
+	if name == "" {
 		allProjects := FindAllUpdated(rootDir, noDep)
 		for _, p := range allProjects {
 			if p.Tag {
@@ -80,12 +75,12 @@ func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 			}
 		}
 	} else {
-		p := Find(*name, rootDir)
+		p := Find(name, rootDir)
 		if p == nil {
-			return fmt.Errorf("project %q not found", *name)
+			return fmt.Errorf("project %q not found", name)
 		}
 		if p.Tag {
-			projects[*name] = p
+			projects[name] = p
 		}
 	}
 	for _, p := range projects {
@@ -100,16 +95,16 @@ func BuildForceWithoutTag(name *string, rootDir string, noDep bool) error {
 	return nil
 }
 
-func BuildWithoutTag(name *string, rootDir string, noDep bool) error {
+func BuildWithoutTag(name string, rootDir string, noDep bool) error {
 	projects := Projects{}
-	if name == nil {
+	if name == "" {
 		projects = FindAllUpdated(rootDir, noDep)
 	} else {
-		p := Find(*name, rootDir)
+		p := Find(name, rootDir)
 		if p == nil {
-			return fmt.Errorf("project %q not found", *name)
+			return fmt.Errorf("project %q not found", name)
 		}
-		projects[*name] = p
+		projects[name] = p
 	}
 	for _, p := range projects {
 		if !p.Tag {
@@ -146,11 +141,10 @@ func findPaths(rootDir string) (dirs []string, err error) {
 	for _, v := range strings.Split(string(output), "\n") {
 		l := len(v) - len(configFileName)
 		if l >= 0 && v[l:] == configFileName {
-			if l == 0 {
-				dirs = append(dirs, base)
-			}
 			if l > 0 {
 				dirs = append(dirs, fmt.Sprintf("%s%s%s", base, "/", v[:l-1]))
+			} else {
+				dirs = append(dirs, base)
 			}
 		}
 	}
@@ -216,6 +210,9 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
+	v.SetDefault("Dir", dir)
+	v.SetDefault("Name", filepath.Base(dir))
+	v.SetDefault("Strategies", defaultStrategies)
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -223,16 +220,8 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
-	// init Name based on current directory if not set in config
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
-	}
-
 	// init BaseDir
 	p.BaseDir = dir
-	if p.Dir == "" {
-		p.Dir = dir
-	}
 	if !path.IsAbs(p.Dir) {
 		p.Dir = path.Clean(path.Join(dir, p.Dir))
 	}
@@ -248,11 +237,6 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
-	}
-
-	// init Strategies, set default strategies if not set
-	if len(p.Strategies) == 0 {
-		p.Strategies = defaultStrategies
 	}
 
 	// init Dependencies
