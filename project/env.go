@@ -28,7 +28,7 @@ func (p *Project) env(opts ...envOpt) Env {
 	for _, v := range p.Env {
 		env[v.Name] = v.Value
 	}
-	env["GALLY_PROJECT_WORKDIR"] = p.Dir
+	env["GALLY_PROJECT_WORKDIR"] = p.WorkDir
 	env["GALLY_PROJECT_NAME"] = p.Name
 	env["GALLY_PROJECT_ROOT"] = p.BaseDir
 	env["GALLY_ROOT"] = p.RootDir

@@ -27,10 +27,8 @@ type Project struct {
 	// list of dependency folders
 	DependsOn    []string `mapstructure:"depends_on"`
 	Dependencies Dependencies
-	// Dir is the directory where the work happen
-	Dir     string `mapstructure:"workdir"`
-	Disable bool
-	Env     []struct {
+	Disable      bool
+	Env          []struct {
 		Name  string
 		Value string
 	}
@@ -42,6 +40,8 @@ type Project struct {
 	Strategies    Strategies
 	Tag           bool   `mapstructure:"tag"`
 	VersionScript string `mapstructure:"version"`
+	// WorkDir is the directory where the work happen
+	WorkDir string `mapstructure:"workdir"`
 
 	// cache
 	bumped  *bool   `mapstructure:"-"`
@@ -123,7 +123,7 @@ func BuildWithoutTag(name *string, rootDir string, noDep bool) error {
 
 func (p *Project) exec(str string, env Env) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", str)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.WorkDir
 	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	return cmd.Output()
 }
@@ -230,14 +230,14 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 
 	// init BaseDir
 	p.BaseDir = dir
-	if p.Dir == "" {
-		p.Dir = dir
+	if p.WorkDir == "" {
+		p.WorkDir = dir
 	}
-	if !path.IsAbs(p.Dir) {
-		p.Dir = path.Clean(path.Join(dir, p.Dir))
+	if !path.IsAbs(p.WorkDir) {
+		p.WorkDir = path.Clean(path.Join(dir, p.WorkDir))
 	}
-	if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-		jww.FATAL.Fatalf("workdir directory %q does not exist", p.Dir)
+	if _, err := os.Stat(p.WorkDir); os.IsNotExist(err) {
+		jww.FATAL.Fatalf("workdir directory %q does not exist", p.WorkDir)
 	}
 
 	// init RootDir
@@ -288,7 +288,7 @@ func (p *Project) run(script string, env Env) error {
 		}
 	}
 	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.WorkDir
 	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -328,7 +328,7 @@ func (p *Project) Version() string {
 		return *p.version
 	}
 	if p.VersionScript == "" {
-		version := repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+		version := repo.Version(p.WorkDir, p.Dependencies.paths(), p.Ignore)
 		p.version = &version
 		return version
 	}
@@ -360,4 +360,11 @@ func (p *Project) WasUpdated(noDep bool) bool {
 	}
 	p.updated = newFalse()
 	return false
+}
+
+func (p *Project) workDir() string {
+	if p.WorkDir == "" {
+
+	}
+	return ""
 }

@@ -18,7 +18,7 @@ var buildCmd = &cobra.Command{
 		}
 		if tag != "" {
 			if err := project.BuildTag(p, tag, rootDir); err != nil {
-				jww.ERROR.Fatalf("could not build properly project: %v", err)
+				jww.ERROR.Fatalf("could not build properly project %s@%s in %q: %v", *p, tag, rootDir, err)
 			}
 			return
 		}

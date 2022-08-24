@@ -36,8 +36,8 @@ func TestDependsOn(t *testing.T) {
 
 	p = New("../examples/tag", "..")
 	expected := path.Join(p.RootDir, "examples")
-	if p.Dependencies[0].Dir != expected {
-		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].Dir)
+	if p.Dependencies[0].WorkDir != expected {
+		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].WorkDir)
 		t.FailNow()
 	}
 }
@@ -82,8 +82,8 @@ func TestFindProjectPaths(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	p := New("../examples/tag", "..")
-	if !strings.HasPrefix(p.BaseDir, p.Dir) {
-		t.Errorf("%q directory is not in %q", p.BaseDir, p.Dir)
+	if !strings.HasPrefix(p.BaseDir, p.WorkDir) {
+		t.Errorf("%q directory is not in %q", p.BaseDir, p.WorkDir)
 		t.FailNow()
 	}
 }
@@ -142,7 +142,7 @@ func TestRunBuild(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	c := Project{BaseDir: ".", Dir: "../examples/tag", VersionScript: "head -1 VERSION"}
+	c := Project{BaseDir: ".", WorkDir: "../examples/tag", VersionScript: "head -1 VERSION"}
 	expected := "0.3.5"
 	if c.Version() != expected {
 		t.Errorf("version must be equal to %q but is actually %q", expected, c.Version())
