@@ -10,7 +10,6 @@ strategies:
     branch: master
   previous-commit:
     only: master
-build: echo go building notag!
 env:
   - name: NAMESPACE
     value: "demo"
