@@ -223,6 +223,9 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
+	v.SetDefault("Dir", dir)
+	v.SetDefault("Name", filepath.Base(dir))
+	v.SetDefault("Strategies", defaultStrategies)
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -230,17 +233,10 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
-	// init Name based on current directory if not set in config
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
-	}
-
 	// init BaseDir
 	p.BaseDir = dir
 	p.WorkDir = os.ExpandEnv(p.WorkDir)
-	if p.WorkDir == "" {
-		p.WorkDir = dir
-	}
+
 	if !path.IsAbs(p.WorkDir) {
 		p.WorkDir = path.Clean(path.Join(dir, p.WorkDir))
 	}
@@ -256,11 +252,6 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
-	}
-
-	// init Strategies, set default strategies if not set
-	if len(p.Strategies) == 0 {
-		p.Strategies = defaultStrategies
 	}
 
 	// init Dependencies
@@ -309,7 +300,6 @@ func (p *Project) run(script string, env Env) error {
 }
 
 func (p *Project) runBuild(version string) error {
-	jww.INFO.Printf("deprecated function\n")
 	jww.INFO.Printf("building %q version %q\n", p.Name, version)
 	return p.run(p.BuildScript, p.env(setVersion(version)))
 }
