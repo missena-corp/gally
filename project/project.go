@@ -1,6 +1,7 @@
 package project
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,10 +13,6 @@ import (
 	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/viper"
 )
-
-const configFileName = ".gally.yml"
-
-var envVars map[string]string
 
 type Project struct {
 	// BaseDir is the directory where the configuration file is located
@@ -50,6 +47,15 @@ type Project struct {
 }
 
 type Projects map[string]*Project
+
+const (
+	configFileName = ".gally.yml"
+)
+
+var (
+	envVars            map[string]string
+	ErrCmdDoesNotExist = errors.New("command does not exists")
+)
 
 func BuildTag(name *string, tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
@@ -272,7 +278,7 @@ func newTrue() *bool { b := true; return &b }
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
 	if !ok {
-		return fmt.Errorf("script %q not available", s)
+		return ErrCmdDoesNotExist
 	}
 	return p.run(script, p.env(generateVersion()))
 }
