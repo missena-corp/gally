@@ -207,6 +207,7 @@ func (p *Project) ignored(file string) bool {
 // the function is expecting full path as argument
 func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	v := viper.New()
+	dir = os.ExpandEnv(dir)
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
 		if err != nil {
@@ -230,6 +231,7 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 
 	// init BaseDir
 	p.BaseDir = dir
+	p.WorkDir = os.ExpandEnv(p.WorkDir)
 	if p.WorkDir == "" {
 		p.WorkDir = dir
 	}
@@ -360,11 +362,4 @@ func (p *Project) WasUpdated(noDep bool) bool {
 	}
 	p.updated = newFalse()
 	return false
-}
-
-func (p *Project) workDir() string {
-	if p.WorkDir == "" {
-
-	}
-	return ""
 }
