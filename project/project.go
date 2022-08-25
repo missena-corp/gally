@@ -1,6 +1,7 @@
 package project
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,10 +14,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const configFileName = ".gally.yml"
-
-var envVars map[string]string
-
 type Project struct {
 	// BaseDir is the directory where the configuration file is located
 	BaseDir string `mapstructure:"-"`
@@ -27,10 +24,8 @@ type Project struct {
 	// list of dependency folders
 	DependsOn    []string `mapstructure:"depends_on"`
 	Dependencies Dependencies
-	// Dir is the directory where the work happen
-	Dir     string `mapstructure:"workdir"`
-	Disable bool
-	Env     []struct {
+	Disable      bool
+	Env          []struct {
 		Name  string
 		Value string
 	}
@@ -42,6 +37,8 @@ type Project struct {
 	Strategies    Strategies
 	Tag           bool   `mapstructure:"tag"`
 	VersionScript string `mapstructure:"version"`
+	// WorkDir is the directory where the work happen
+	WorkDir string `mapstructure:"workdir"`
 
 	// cache
 	bumped  *bool   `mapstructure:"-"`
@@ -50,6 +47,15 @@ type Project struct {
 }
 
 type Projects map[string]*Project
+
+const (
+	configFileName = ".gally.yml"
+)
+
+var (
+	envVars            map[string]string
+	ErrCmdDoesNotExist = errors.New("command does not exists")
+)
 
 func BuildTag(name *string, tag string, rootDir string) error {
 	sp := strings.Split(tag, "@")
@@ -123,7 +129,7 @@ func BuildWithoutTag(name *string, rootDir string, noDep bool) error {
 
 func (p *Project) exec(str string, env Env) ([]byte, error) {
 	cmd := exec.Command("sh", "-c", str)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.WorkDir
 	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	return cmd.Output()
 }
@@ -146,11 +152,10 @@ func findPaths(rootDir string) (dirs []string, err error) {
 	for _, v := range strings.Split(string(output), "\n") {
 		l := len(v) - len(configFileName)
 		if l >= 0 && v[l:] == configFileName {
-			if l == 0 {
-				dirs = append(dirs, base)
-			}
 			if l > 0 {
 				dirs = append(dirs, fmt.Sprintf("%s%s%s", base, "/", v[:l-1]))
+			} else {
+				dirs = append(dirs, base)
 			}
 		}
 	}
@@ -207,6 +212,7 @@ func (p *Project) ignored(file string) bool {
 // the function is expecting full path as argument
 func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	v := viper.New()
+	dir = os.ExpandEnv(dir)
 	if !path.IsAbs(dir) {
 		d, err := filepath.Abs(dir)
 		if err != nil {
@@ -216,6 +222,9 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
+	v.SetDefault("Dir", dir)
+	v.SetDefault("Name", filepath.Base(dir))
+	v.SetDefault("Strategies", defaultStrategies)
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -223,21 +232,15 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
-	// init Name based on current directory if not set in config
-	if p.Name == "" {
-		p.Name = filepath.Base(dir)
-	}
-
 	// init BaseDir
 	p.BaseDir = dir
-	if p.Dir == "" {
-		p.Dir = dir
+	p.WorkDir = os.ExpandEnv(p.WorkDir)
+
+	if !path.IsAbs(p.WorkDir) {
+		p.WorkDir = path.Clean(path.Join(dir, p.WorkDir))
 	}
-	if !path.IsAbs(p.Dir) {
-		p.Dir = path.Clean(path.Join(dir, p.Dir))
-	}
-	if _, err := os.Stat(p.Dir); os.IsNotExist(err) {
-		jww.FATAL.Fatalf("workdir directory %q does not exist", p.Dir)
+	if _, err := os.Stat(p.WorkDir); os.IsNotExist(err) {
+		jww.FATAL.Fatalf("workdir directory %q does not exist", p.WorkDir)
 	}
 
 	// init RootDir
@@ -248,11 +251,6 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
 		}
 		p.RootDir = d
-	}
-
-	// init Strategies, set default strategies if not set
-	if len(p.Strategies) == 0 {
-		p.Strategies = defaultStrategies
 	}
 
 	// init Dependencies
@@ -270,7 +268,7 @@ func newTrue() *bool { b := true; return &b }
 func (p *Project) Run(s string) error {
 	script, ok := p.Scripts[s]
 	if !ok {
-		return fmt.Errorf("script %q not available", s)
+		return ErrCmdDoesNotExist
 	}
 	return p.run(script, p.env(generateVersion()))
 }
@@ -288,7 +286,7 @@ func (p *Project) run(script string, env Env) error {
 		}
 	}
 	cmd := exec.Command("sh", "-c", script)
-	cmd.Dir = p.Dir
+	cmd.Dir = p.WorkDir
 	cmd.Env = append(os.Environ(), env.ToSlice()...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -328,7 +326,7 @@ func (p *Project) Version() string {
 		return *p.version
 	}
 	if p.VersionScript == "" {
-		version := repo.Version(p.Dir, p.Dependencies.paths(), p.Ignore)
+		version := repo.Version(p.WorkDir, p.Dependencies.paths(), p.Ignore)
 		p.version = &version
 		return version
 	}

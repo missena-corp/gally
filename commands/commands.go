@@ -9,14 +9,24 @@ import (
 )
 
 var (
-	force        bool
-	noDependency bool
-	projectName  string
-	rootDir      string
-	tag          string
-	updated      bool
-	verbose      bool
+	allProjects   bool
+	force         bool
+	ignoreMissing bool
+	noDependency  bool
+	projectName   string
+	rootDir       string
+	tag           string
+	updated       bool
+	verbose       bool
 )
+
+func addAllProjectsFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&allProjects, "all", "a", false, "all the command")
+}
+
+func addIgnoreMissingFlag(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&ignoreMissing, "--ignore-missing", "", false, "ignore missing script")
+}
 
 func addForceFlag(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "force the command")

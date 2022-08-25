@@ -10,6 +10,8 @@ var runCmd = &cobra.Command{
 	Use:     "run [script]",
 	Aliases: []string{"exec"},
 	Short:   "run your script on projects having updated files",
+	Long: `run your script on projects having updated files.
+	Be careful using without option --ignore-missing would mean the script is defined on *every* project`,
 	Run: func(cmd *cobra.Command, args []string) {
 		handleVerboseFlag()
 		if len(args) == 0 {
@@ -17,19 +19,19 @@ var runCmd = &cobra.Command{
 		}
 		projects := project.Projects{}
 		if projectName != "" {
-			p := project.FindByName(rootDir, projectName)
-			if p == nil {
+			projects[projectName] = project.FindByName(rootDir, projectName)
+			if projects[projectName] == nil {
 				jww.ERROR.Fatalf("could not find project %q", projectName)
 			}
-			projects[projectName] = project.FindByName(rootDir, projectName)
-		} else if force {
+		} else if allProjects {
 			projects = project.FindAll(rootDir)
 		} else {
 			projects = project.FindAllUpdated(rootDir, noDependency)
 		}
 		script := args[0]
 		for _, p := range projects {
-			if err := p.Run(script); err != nil {
+			err := p.Run(script)
+			if err != nil && (!ignoreMissing || err != project.ErrCmdDoesNotExist) {
 				jww.ERROR.Fatalf("could not run properly script %q for %q: %v", script, p.Name, err)
 			}
 		}
@@ -37,7 +39,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	addForceFlag(runCmd)
+	addAllProjectsFlag(runCmd)
+	addIgnoreMissingFlag(runCmd)
 	addNoDependencyFlag(runCmd)
 	addProjectFlag(runCmd)
 	rootCmd.AddCommand(runCmd)
