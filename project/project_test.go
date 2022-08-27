@@ -37,7 +37,7 @@ func TestDependsOn(t *testing.T) {
 	p = New("../examples/tag", "..")
 	expected := path.Join(p.RootDir, "examples")
 	if p.Dependencies[0].WorkDir != expected {
-		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].WorkDir)
+		t.Errorf(".gally.yml should contain a depends_on binding to %q instead: %q", expected, p.Dependencies[0].WorkDir)
 		t.FailNow()
 	}
 }

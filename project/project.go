@@ -49,7 +49,8 @@ type Project struct {
 type Projects map[string]*Project
 
 const (
-	configFileName = ".gally.yml"
+	configFileName   = ".gally.yml"
+	configMainBranch = ".gally-branch"
 )
 
 var (
@@ -208,23 +209,34 @@ func (p *Project) ignored(file string) bool {
 	return false
 }
 
+func getDir(dir string) (string, error) {
+	var err error
+	dir = os.ExpandEnv(dir)
+	dir, err = filepath.Abs(dir)
+	if err != nil {
+		return dir, err
+	}
+	_, err = os.Stat(dir)
+	return dir, err
+}
+
 // New reads current config in directory
 // the function is expecting full path as argument
-func New(dir, rootDir string, isDependency ...bool) (p *Project) {
+func New(dir, root string, isDependency ...bool) (p *Project) {
 	v := viper.New()
-	dir = os.ExpandEnv(dir)
-	if !path.IsAbs(dir) {
-		d, err := filepath.Abs(dir)
-		if err != nil {
-			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
-		}
-		dir = d
+	var err error
+	root, err = getDir(root)
+	if err != nil {
+		jww.FATAL.Fatalf("unable to get directory %q: %v", root, err)
+	}
+	dir, err = getDir(dir)
+	if err != nil {
+		jww.FATAL.Fatalf("unable to get directory %q: %v", dir, err)
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
-	v.SetDefault("Dir", dir)
 	v.SetDefault("Name", filepath.Base(dir))
-	v.SetDefault("Strategies", defaultStrategies)
+	v.SetDefault("Strategies", getDefaultStrategies(root))
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -232,30 +244,20 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 		jww.FATAL.Fatalf("unable to decode file %s into struct: %v", file, err)
 	}
 
-	// init BaseDir
 	p.BaseDir = dir
-	p.WorkDir = os.ExpandEnv(p.WorkDir)
-
-	if !path.IsAbs(p.WorkDir) {
-		p.WorkDir = path.Clean(path.Join(dir, p.WorkDir))
-	}
-	if _, err := os.Stat(p.WorkDir); os.IsNotExist(err) {
-		jww.FATAL.Fatalf("workdir directory %q does not exist", p.WorkDir)
+	p.WorkDir, err = getDir(path.Join(dir, p.WorkDir))
+	if err != nil {
+		jww.FATAL.Fatalf("unable to get directory %q: %v", p.WorkDir, err)
 	}
 
-	// init RootDir
-	p.RootDir = path.Clean(rootDir)
-	if !path.IsAbs(rootDir) {
-		d, err := filepath.Abs(rootDir)
-		if err != nil {
-			jww.FATAL.Fatalf("unable to expand directory %q: %v", d, err)
-		}
-		p.RootDir = d
+	p.RootDir, err = getDir(root)
+	if err != nil {
+		jww.FATAL.Fatalf("unable to get directory %q: %v", p.RootDir, err)
 	}
 
 	// init Dependencies
 	for _, dep := range p.DependsOn {
-		p.Dependencies = append(p.Dependencies, New(path.Join(p.BaseDir, dep), rootDir, true))
+		p.Dependencies = append(p.Dependencies, New(path.Join(p.BaseDir, dep), p.RootDir, true))
 	}
 	return p
 }
