@@ -2,6 +2,9 @@ package project
 
 import (
 	"log"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/missena-corp/gally/repo"
 )
@@ -18,12 +21,19 @@ const (
 	PREVIOUS_COMMIT = "previous-commit"
 )
 
-var (
-	defaultStrategies = Strategies{
-		COMPARE_TO:      {Branch: "master"},
-		PREVIOUS_COMMIT: {Only: "master"},
+func getDefaultStrategies(root string) Strategies {
+	branch := "master"
+	file := path.Join(root, configMainBranch)
+	b, err := os.ReadFile(file)
+	if err == nil {
+		branch = strings.TrimSpace(string(b))
 	}
-)
+
+	return Strategies{
+		COMPARE_TO:      {Branch: branch},
+		PREVIOUS_COMMIT: {Only: branch},
+	}
+}
 
 func (strategies Strategies) UpdatedFiles() []string {
 	files := make([]string, 0)

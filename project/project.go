@@ -49,7 +49,8 @@ type Project struct {
 type Projects map[string]*Project
 
 const (
-	configFileName = ".gally.yml"
+	configFileName   = ".gally.yml"
+	configMainBranch = ".gally-branch"
 )
 
 var (
@@ -221,18 +222,21 @@ func getDir(dir string) (string, error) {
 
 // New reads current config in directory
 // the function is expecting full path as argument
-func New(dir, rootDir string, isDependency ...bool) (p *Project) {
+func New(dir, root string, isDependency ...bool) (p *Project) {
 	v := viper.New()
 	var err error
+	root, err = getDir(root)
+	if err != nil {
+		jww.FATAL.Fatalf("unable to get directory %q: %v", root, err)
+	}
 	dir, err = getDir(dir)
 	if err != nil {
 		jww.FATAL.Fatalf("unable to get directory %q: %v", dir, err)
 	}
 	file := path.Join(dir, configFileName)
 	v.SetConfigFile(file)
-	v.SetDefault("Dir", dir)
 	v.SetDefault("Name", filepath.Base(dir))
-	v.SetDefault("Strategies", defaultStrategies)
+	v.SetDefault("Strategies", getDefaultStrategies(root))
 	if err := v.ReadInConfig(); err != nil && len(isDependency) == 0 {
 		jww.FATAL.Fatalf("could not read config file %q: %v", file, err)
 	}
@@ -241,12 +245,12 @@ func New(dir, rootDir string, isDependency ...bool) (p *Project) {
 	}
 
 	p.BaseDir = dir
-	p.WorkDir, err = getDir(p.WorkDir)
+	p.WorkDir, err = getDir(path.Join(dir, p.WorkDir))
 	if err != nil {
 		jww.FATAL.Fatalf("unable to get directory %q: %v", p.WorkDir, err)
 	}
 
-	p.RootDir, err = getDir(rootDir)
+	p.RootDir, err = getDir(root)
 	if err != nil {
 		jww.FATAL.Fatalf("unable to get directory %q: %v", p.RootDir, err)
 	}
