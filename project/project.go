@@ -41,7 +41,6 @@ type Project struct {
 	WorkDir string `mapstructure:"workdir"`
 
 	// cache
-	bumped  *bool   `mapstructure:"-"`
 	updated *bool   `mapstructure:"-"`
 	version *string `mapstructure:"-"`
 }
@@ -50,11 +49,10 @@ type Projects map[string]*Project
 
 const (
 	configFileName   = ".gally.yml"
-	configMainBranch = ".gally-branch"
+	configMainBranch = ".gally.main"
 )
 
 var (
-	envVars            map[string]string
 	ErrCmdDoesNotExist = errors.New("command does not exists")
 )
 
