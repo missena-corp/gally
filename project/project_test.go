@@ -37,7 +37,7 @@ func TestDependsOn(t *testing.T) {
 	p = New("../examples/tag", "..")
 	expected := path.Join(p.RootDir, "examples")
 	if p.Dependencies[0].WorkDir != expected {
-		t.Errorf(".gally.yml should contain a depends_on binding to %q instead %q", expected, p.Dependencies[0].WorkDir)
+		t.Errorf(".gally.yml should contain a depends_on binding to %q instead: %q", expected, p.Dependencies[0].WorkDir)
 		t.FailNow()
 	}
 }
@@ -102,7 +102,7 @@ func TestRun(t *testing.T) {
 		t.FailNow()
 	}
 
-	expected = []byte("dependency.go\nenv.go\nproject.go\nproject_test.go\nstrategies.go\n")
+	expected = []byte("dependency.go\nenv.go\nproject.go\nproject_test.go\nstrategies.go\nstrategies_test.go\n")
 	c = Project{Scripts: map[string]string{"list": "ls"}}
 	out = captureOutput(func() {
 		if err := c.Run("list"); err != nil {
